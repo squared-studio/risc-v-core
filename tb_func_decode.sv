@@ -195,16 +195,7 @@ module tb_func_decode;
   } decoded_inst_t;
 
   //  OPCODE  func rs1 rs2 rs3 rd imm
-  //  7'h3B     .   .   .   .   .  .
-  //  7'h43     .   .   .   .   .  .
-  //  7'h47     .   .   .   .   .  .
-  //  7'h4B     .   .   .   .   .  .
-  //  7'h4F     .   .   .   .   .  .
   //  7'h53     .   .   .   .   .  .
-  //  7'h63     .   .   .   .   .  .
-  //  7'h67     .   .   .   .   .  .
-  //  7'h6F     .   .   .   .   .  .
-  //  7'h73     .   .   .   .   .  .
 
 
   function automatic decoded_inst_t decode(bit [31:0] instr);
@@ -394,33 +385,133 @@ module tb_func_decode;
       end
 
       7'h3B: begin
+        case ({
+          instr[31:25], instr[14:12]
+        })
+          10'b0000000_000: decode.func = ADDW;
+          10'b0100000_000: decode.func = SUBW;
+          10'b0000000_001: decode.func = SLLW;
+          10'b0000000_101: decode.func = SRLW;
+          10'b0100000_101: decode.func = SRAW;
+          10'b0000001_000: decode.func = MULW;
+          10'b0000001_100: decode.func = DIVW;
+          10'b0000001_101: decode.func = DIVUW;
+          10'b0000001_110: decode.func = REMW;
+          10'b0000001_111: decode.func = REMUW;
+          default: return '0;
+        endcase
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rd  = instr[11:7];
       end
 
       7'h43: begin
+        case (instr[26:25])
+          2'b00:   decode.func = FMADD_S;
+          2'b00:   decode.func = FMADD_D;
+          2'b11:   decode.func = FMADD_Q;
+          default: return '0;
+        endcase
+        decode.rs1      = instr[19:15];
+        decode.rs2      = instr[24:20];
+        decode.rs3      = instr[31:27];
+        decode.rd       = instr[11:7];
+        decode.imm[2:0] = instr[14:12];
       end
 
       7'h47: begin
+        case (instr[26:25])
+          2'b00:   decode.func = FMSUB_S;
+          2'b00:   decode.func = FMSUB_D;
+          2'b11:   decode.func = FMSUB_Q;
+          default: return '0;
+        endcase
+        decode.rs1      = instr[19:15];
+        decode.rs2      = instr[24:20];
+        decode.rs3      = instr[31:27];
+        decode.rd       = instr[11:7];
+        decode.imm[2:0] = instr[14:12];
       end
 
       7'h4B: begin
+        case (instr[26:25])
+          2'b00:   decode.func = FNMSUB_S;
+          2'b00:   decode.func = FNMSUB_D;
+          2'b11:   decode.func = FNMSUB_Q;
+          default: return '0;
+        endcase
+        decode.rs1      = instr[19:15];
+        decode.rs2      = instr[24:20];
+        decode.rs3      = instr[31:27];
+        decode.rd       = instr[11:7];
+        decode.imm[2:0] = instr[14:12];
       end
 
       7'h4F: begin
+        case (instr[26:25])
+          2'b00:   decode.func = FNMADD_S;
+          2'b00:   decode.func = FNMADD_D;
+          2'b11:   decode.func = FNMADD_Q;
+          default: return '0;
+        endcase
+        decode.rs1      = instr[19:15];
+        decode.rs2      = instr[24:20];
+        decode.rs3      = instr[31:27];
+        decode.rd       = instr[11:7];
+        decode.imm[2:0] = instr[14:12];
       end
 
       7'h53: begin
+        // TODO INSTR
+        decode.rs1      = instr[19:15];
+        decode.rs2      = instr[24:20];
+        decode.rd       = instr[11:7];
+        decode.imm[2:0] = instr[14:12];
       end
 
       7'h63: begin
+        case (instr[14:12])
+          3'b000:  decode.func = BEQ;
+          3'b001:  decode.func = BNE;
+          3'b100:  decode.func = BLT;
+          3'b101:  decode.func = BGE;
+          3'b110:  decode.func = BLTU;
+          3'b111:  decode.func = BGEU;
+          default: return '0;
+        endcase
+        decode.rs1       = instr[19:15];
+        decode.rs2       = instr[24:20];
+        decode.imm[12]   = instr[31];
+        decode.imm[10:5] = instr[30:25];
+        decode.imm[4:1]  = instr[11:8];
+        decode.imm[11]   = instr[7];
       end
 
       7'h67: begin
+        case (instr[14:12])
+          3'b000:  decode.func = JALR;
+          default: return '0;
+        endcase
+        decode.rs1       = instr[19:15];
+        decode.rd        = instr[11:7];
+        decode.imm[11:0] = instr[14:12];
       end
 
       7'h6F: begin
+        decode.func       = JAL;
+        decode.rd         = instr[11:7];
+        decode.imm[20]    = instr[31];
+        decode.imm[10:1]  = instr[30:21];
+        decode.imm[11]    = instr[20];
+        decode.imm[19:12] = instr[19:12];
       end
 
       7'h73: begin
+        case (instr[31:7])
+          25'b000000000000_00000_000_00000: decode.func = ECALL;
+          25'b000000000001_00000_000_00000: decode.func = EBREAK;
+          default: return '0;
+        endcase
       end
 
       default: return '0;
