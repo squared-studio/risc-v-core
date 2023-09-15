@@ -1,0 +1,3 @@
+[submodule "sub/SystemVerilog"]
+	path = sub/SystemVerilog
+	url = https://github.com/squared-studio/SystemVerilog.git
