@@ -1,5 +1,17 @@
 module tb_func_decode;
 
+  initial begin
+    $display("\033[7;38m####################### TEST STARTED #######################\033[0m");
+    $timeformat(-6, 3, "us");
+    repeat (1000) repeat (1000) repeat (1000) #1000;
+    $display("\033[1;31m[FATAL][TIMEOUT]\033[0m");
+    $finish;
+  end
+
+  final begin
+    $display("\033[7;38m######################## TEST ENDED ########################\033[0m");
+  end
+
   typedef enum int {
     INVALID_INSTRUCTION,
     ADD,
@@ -193,10 +205,6 @@ module tb_func_decode;
     logic [4:0]  rd;
     logic [31:0] imm;   // TODO RESIZE
   } decoded_inst_t;
-
-  //  OPCODE  func rs1 rs2 rs3 rd imm
-  //  7'h53     .   .   .   .   .  .
-
 
   function automatic decoded_inst_t decode(bit [31:0] instr);
     decode = '0;
@@ -462,11 +470,140 @@ module tb_func_decode;
       end
 
       7'h53: begin
-        // TODO INSTR
+        case (instr[31:25])
+          //--------------------------------------------------------------------
+          7'b0000000, 7'b0000001, 7'b0000011, 7'b0000100, 7'b0000101,
+          7'b0000111, 7'b0001000, 7'b0001001, 7'b0001011, 7'b0001100,
+          7'b0001101, 7'b0001111 : begin
+            case (instr[31:25])
+              7'b0000000: decode.func = FADD_S;
+              7'b0000001: decode.func = FADD_D;
+              7'b0000011: decode.func = FADD_Q;
+              7'b0000100: decode.func = FSUB_S;
+              7'b0000101: decode.func = FSUB_D;
+              7'b0000111: decode.func = FSUB_Q;
+              7'b0001000: decode.func = FMUL_S;
+              7'b0001001: decode.func = FMUL_D;
+              7'b0001011: decode.func = FMUL_Q;
+              7'b0001100: decode.func = FDIV_S;
+              7'b0001101: decode.func = FDIV_D;
+              7'b0001111: decode.func = FDIV_Q;
+              default: return '0;
+            endcase
+            decode.rs1      = instr[19:15];
+            decode.rs2      = instr[24:20];
+            decode.rd       = instr[11:7];
+            decode.imm[2:0] = instr[14:12];
+          end
+          //--------------------------------------------------------------------
+          7'b0010000, 7'b0010001, 7'b0010011, 7'b0010100, 7'b0010101,
+          7'b0010111, 7'b1010000, 7'b1010001, 7'b1010011 : begin
+            case ({
+              instr[31:25], instr[14:12]
+            })
+              10'b0010000_000: decode.func = FSGNJ_S;
+              10'b0010000_001: decode.func = FSGNJN_S;
+              10'b0010000_010: decode.func = FSGNJX_S;
+              10'b0010001_000: decode.func = FSGNJ_D;
+              10'b0010001_001: decode.func = FSGNJN_D;
+              10'b0010001_010: decode.func = FSGNJX_D;
+              10'b0010011_000: decode.func = FSGNJ_Q;
+              10'b0010011_001: decode.func = FSGNJN_Q;
+              10'b0010011_010: decode.func = FSGNJX_Q;
+              10'b0010100_000: decode.func = FMIN_S;
+              10'b0010100_001: decode.func = FMAX_S;
+              10'b0010101_000: decode.func = FMIN_D;
+              10'b0010101_001: decode.func = FMAX_D;
+              10'b0010111_000: decode.func = FMIN_Q;
+              10'b0010111_001: decode.func = FMAX_Q;
+              10'b1010000_000: decode.func = FLE_S;
+              10'b1010000_001: decode.func = FLT_S;
+              10'b1010000_010: decode.func = FEQ_S;
+              10'b1010001_000: decode.func = FLE_D;
+              10'b1010001_001: decode.func = FLT_D;
+              10'b1010001_010: decode.func = FEQ_D;
+              10'b1010011_000: decode.func = FLE_Q;
+              10'b1010011_001: decode.func = FLT_Q;
+              10'b1010011_010: decode.func = FEQ_Q;
+              default: return '0;
+            endcase
+            decode.rs1 = instr[19:15];
+            decode.rs2 = instr[24:20];
+            decode.rd  = instr[11:7];
+          end
+          //--------------------------------------------------------------------
+          7'b0100000, 7'b0100001, 7'b0100011, 7'b0101100, 7'b0101101,
+          7'b0101111, 7'b1100000, 7'b1100001, 7'b1100011, 7'b1101000,
+          7'b1101001, 7'b1101011 : begin
+            case ({
+              instr[31:25], instr[24:20]
+            })
+              12'b0100000_00001: decode.func = FCVT_S_D;
+              12'b0100000_00011: decode.func = FCVT_S_Q;
+              12'b0100001_00000: decode.func = FCVT_D_S;
+              12'b0100001_00011: decode.func = FCVT_D_Q;
+              12'b0100011_00000: decode.func = FCVT_Q_S;
+              12'b0100011_00001: decode.func = FCVT_Q_D;
+              12'b0101100_00000: decode.func = FSQRT_S;
+              12'b0101101_00000: decode.func = FSQRT_D;
+              12'b0101111_00000: decode.func = FSQRT_Q;
+              12'b1100000_00000: decode.func = FCVT_W_S;
+              12'b1100000_00001: decode.func = FCVT_WU_S;
+              12'b1100000_00010: decode.func = FCVT_L_S;
+              12'b1100000_00011: decode.func = FCVT_LU_S;
+              12'b1100001_00000: decode.func = FCVT_W_D;
+              12'b1100001_00001: decode.func = FCVT_WU_D;
+              12'b1100001_00010: decode.func = FCVT_L_D;
+              12'b1100001_00011: decode.func = FCVT_LU_D;
+              12'b1100011_00000: decode.func = FCVT_W_Q;
+              12'b1100011_00001: decode.func = FCVT_WU_Q;
+              12'b1100011_00010: decode.func = FCVT_L_Q;
+              12'b1100011_00011: decode.func = FCVT_LU_Q;
+              12'b1101000_00000: decode.func = FCVT_S_W;
+              12'b1101000_00001: decode.func = FCVT_S_WU;
+              12'b1101000_00010: decode.func = FCVT_S_L;
+              12'b1101000_00011: decode.func = FCVT_S_LU;
+              12'b1101001_00000: decode.func = FCVT_D_W;
+              12'b1101001_00001: decode.func = FCVT_D_WU;
+              12'b1101001_00010: decode.func = FCVT_D_L;
+              12'b1101001_00011: decode.func = FCVT_D_LU;
+              12'b1101011_00000: decode.func = FCVT_Q_W;
+              12'b1101011_00001: decode.func = FCVT_Q_WU;
+              12'b1101011_00010: decode.func = FCVT_Q_L;
+              12'b1101011_00011: decode.func = FCVT_Q_LU;
+              default: return '0;
+            endcase
+            decode.rs1      = instr[19:15];
+            decode.rd       = instr[11:7];
+            decode.imm[2:0] = instr[14:12];
+          end
+          //--------------------------------------------------------------------
+          7'b1110000, 7'b1110001, 7'b1110011, 7'b1111000, 7'b1111001: begin
+            case ({
+              instr[31:25], instr[24:20], instr[14:12]
+            })
+              15'b1110000_00000_000: decode.func = FMV_X_W;
+              15'b1110000_00000_001: decode.func = FCLASS_S;
+              15'b1110001_00000_000: decode.func = FMV_X_D;
+              15'b1110001_00000_001: decode.func = FCLASS_D;
+              15'b1110011_00000_001: decode.func = FCLASS_Q;
+              15'b1111000_00000_000: decode.func = FMV_W_X;
+              15'b1111001_00000_000: decode.func = FMV_D_X;
+              default: return '0;
+            endcase
+            decode.rs1 = instr[19:15];
+            decode.rd  = instr[11:7];
+          end
+          //--------------------------------------------------------------------
+          default: return '0;
+        endcase
+
+
         decode.rs1      = instr[19:15];
         decode.rs2      = instr[24:20];
         decode.rd       = instr[11:7];
         decode.imm[2:0] = instr[14:12];
+
       end
 
       7'h63: begin
@@ -519,7 +656,11 @@ module tb_func_decode;
   endfunction
 
   initial begin
-    $display("Hello!!");
+    $display("%p", decode('h06f00293));
+    $display("%p", decode('h0de00313));
+    $display("%p", decode('h006283b3));
+    $display("%p", decode('h006283b0));
+    $finish;
   end
 
 endmodule
