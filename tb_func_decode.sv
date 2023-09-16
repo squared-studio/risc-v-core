@@ -45,6 +45,12 @@ module tb_func_decode;
     BLT,
     BLTU,
     BNE,
+    CSRRC,
+    CSRRCI,
+    CSRRS,
+    CSRRSI,
+    CSRRW,
+    CSRRWI,
     DIV,
     DIVU,
     DIVUW,
@@ -90,6 +96,7 @@ module tb_func_decode;
     FDIV_D,
     FDIV_Q,
     FDIV_S,
+    FENCE_I,
     FENCE,
     FEQ_D,
     FEQ_Q,
@@ -203,13 +210,30 @@ module tb_func_decode;
     logic [4:0]  rs2;
     logic [4:0]  rs3;
     logic [4:0]  rd;
-    logic [31:0] imm;   // TODO RESIZE
+    logic [31:0] imm;
+    logic [4:0]  shamt;
+
+    logic [3:0] fm;
+    logic [3:0] pred;
+    logic [3:0] succ;
+
+    logic aq;
+    logic rl;
+
+    logic [2:0] rm;
+
+    logic [31:0] uimm;
+    logic [11:0] csr;
+
   } decoded_inst_t;
 
   function automatic decoded_inst_t decode(bit [31:0] instr);
     decode = '0;
     case (instr[6:0])
       7'h03: begin
+        decode.rs1       = instr[19:15];
+        decode.rd        = instr[11:7];
+        decode.imm[11:0] = instr[31:20];
         case (instr[14:12])
           3'b000:  decode.func = LB;
           3'b001:  decode.func = LH;
@@ -220,34 +244,45 @@ module tb_func_decode;
           3'b110:  decode.func = LWU;
           default: return '0;
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rd        = instr[11:7];
-        decode.imm[11:0] = instr[31:20];
       end
 
       7'h07: begin
+        decode.rs1       = instr[19:15];
+        decode.rd        = instr[11:7];
+        decode.imm[11:0] = instr[31:20];
         case (instr[14:12])
           3'b010:  decode.func = FLW;
           3'b011:  decode.func = FLD;
           3'b100:  decode.func = FLQ;
           default: return '0;
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rd        = instr[11:7];
-        decode.imm[11:0] = instr[31:20];
       end
 
       7'h0F: begin
+        decode.rs1 = instr[19:15];
+        decode.rd  = instr[11:7];
         case (instr[14:12])
-          3'b001:  decode.func = FENCE;
+          3'b000: begin
+            decode.fm   = instr[31:28];
+            decode.pred = instr[27:24];
+            decode.succ = instr[23:20];
+          end
+          3'b001: begin
+            decode.imm[11:0] = instr[31:20];
+          end
           default: return '0;
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rd        = instr[11:7];
-        decode.imm[11:0] = instr[31:20];
+        case (instr[14:12])
+          3'b000:  decode.func = FENCE;
+          3'b001:  decode.func = FENCE_I;
+          default: return '0;
+        endcase
       end
 
       7'h13: begin
+        decode.rs1       = instr[19:15];
+        decode.rd        = instr[11:7];
+        decode.imm[11:0] = instr[31:20];
         case (instr[14:12])
           3'b000: decode.func = ADDI;
           3'b010: decode.func = SLTI;
@@ -256,6 +291,8 @@ module tb_func_decode;
           3'b110: decode.func = ORI;
           3'b111: decode.func = ANDI;
           default: begin
+            decode.imm   = '0;
+            decode.shamt = instr[24:20];
             case ({
               instr[31:26], instr[14:12]
             })
@@ -266,21 +303,23 @@ module tb_func_decode;
             endcase
           end
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rd        = instr[11:7];
-        decode.imm[11:0] = instr[31:20];
       end
 
       7'h17: begin
-        decode.func       = AUIPC;
         decode.rd         = instr[11:7];
         decode.imm[31:12] = instr[31:12];
+        decode.func       = AUIPC;
       end
 
       7'h1B: begin
+        decode.rs1       = instr[19:15];
+        decode.rd        = instr[11:7];
+        decode.imm[11:0] = instr[31:20];
         case (instr[14:12])
           3'b000: decode.func = ADDIW;
           default: begin
+            decode.imm   = '0;
+            decode.shamt = instr[24:20];
             case ({
               instr[31:26], instr[14:12]
             })
@@ -291,12 +330,13 @@ module tb_func_decode;
             endcase
           end
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rd        = instr[11:7];
-        decode.imm[11:0] = instr[31:20];
       end
 
       7'h23: begin
+        decode.rs1       = instr[19:15];
+        decode.rs2       = instr[24:20];
+        decode.imm[11:5] = instr[31:25];
+        decode.imm[4:0]  = instr[11:7];
         case (instr[14:12])
           3'b000:  decode.func = SB;
           3'b001:  decode.func = SH;
@@ -304,10 +344,6 @@ module tb_func_decode;
           3'b011:  decode.func = SD;
           default: return '0;
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rs2       = instr[24:20];
-        decode.imm[11:5] = instr[31:25];
-        decode.imm[4:0]  = instr[11:7];
       end
 
       7'h27: begin
@@ -324,6 +360,11 @@ module tb_func_decode;
       end
 
       7'h2F: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rd  = instr[11:7];
+        decode.aq  = instr[26];
+        decode.rl  = instr[25];
         case ({
           instr[31:27], instr[14:12]
         })
@@ -351,13 +392,12 @@ module tb_func_decode;
           8'b11100_011: decode.func = AMOMAXU_D;
           default: return '0;
         endcase
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rd       = instr[11:7];
-        decode.imm[1:0] = instr[26:25];
       end
 
       7'h33: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rd  = instr[11:7];
         case ({
           instr[31:25], instr[14:12]
         })
@@ -381,18 +421,18 @@ module tb_func_decode;
           10'b0000001_111: decode.func = REMU;
           default: return '0;
         endcase
-        decode.rs1 = instr[19:15];
-        decode.rs2 = instr[24:20];
-        decode.rd  = instr[11:7];
       end
 
       7'h37: begin
-        decode.func       = LUI;
         decode.rd         = instr[11:7];
         decode.imm[31:12] = instr[31:12];
+        decode.func       = LUI;
       end
 
       7'h3B: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rd  = instr[11:7];
         case ({
           instr[31:25], instr[14:12]
         })
@@ -408,65 +448,62 @@ module tb_func_decode;
           10'b0000001_111: decode.func = REMUW;
           default: return '0;
         endcase
-        decode.rs1 = instr[19:15];
-        decode.rs2 = instr[24:20];
-        decode.rd  = instr[11:7];
       end
 
       7'h43: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rs3 = instr[31:27];
+        decode.rd  = instr[11:7];
+        decode.rm  = instr[14:12];
         case (instr[26:25])
           2'b00:   decode.func = FMADD_S;
           2'b00:   decode.func = FMADD_D;
           2'b11:   decode.func = FMADD_Q;
           default: return '0;
         endcase
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rs3      = instr[31:27];
-        decode.rd       = instr[11:7];
-        decode.imm[2:0] = instr[14:12];
       end
 
       7'h47: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rs3 = instr[31:27];
+        decode.rd  = instr[11:7];
+        decode.rm  = instr[14:12];
         case (instr[26:25])
           2'b00:   decode.func = FMSUB_S;
           2'b00:   decode.func = FMSUB_D;
           2'b11:   decode.func = FMSUB_Q;
           default: return '0;
         endcase
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rs3      = instr[31:27];
-        decode.rd       = instr[11:7];
-        decode.imm[2:0] = instr[14:12];
       end
 
       7'h4B: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rs3 = instr[31:27];
+        decode.rd  = instr[11:7];
+        decode.rm  = instr[14:12];
         case (instr[26:25])
           2'b00:   decode.func = FNMSUB_S;
           2'b00:   decode.func = FNMSUB_D;
           2'b11:   decode.func = FNMSUB_Q;
           default: return '0;
         endcase
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rs3      = instr[31:27];
-        decode.rd       = instr[11:7];
-        decode.imm[2:0] = instr[14:12];
       end
 
       7'h4F: begin
+        decode.rs1 = instr[19:15];
+        decode.rs2 = instr[24:20];
+        decode.rs3 = instr[31:27];
+        decode.rd  = instr[11:7];
+        decode.rm  = instr[14:12];
         case (instr[26:25])
           2'b00:   decode.func = FNMADD_S;
           2'b00:   decode.func = FNMADD_D;
           2'b11:   decode.func = FNMADD_Q;
           default: return '0;
         endcase
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rs3      = instr[31:27];
-        decode.rd       = instr[11:7];
-        decode.imm[2:0] = instr[14:12];
       end
 
       7'h53: begin
@@ -475,6 +512,10 @@ module tb_func_decode;
           7'b0000000, 7'b0000001, 7'b0000011, 7'b0000100, 7'b0000101,
           7'b0000111, 7'b0001000, 7'b0001001, 7'b0001011, 7'b0001100,
           7'b0001101, 7'b0001111 : begin
+            decode.rs1 = instr[19:15];
+            decode.rs2 = instr[24:20];
+            decode.rd  = instr[11:7];
+            decode.rm  = instr[14:12];
             case (instr[31:25])
               7'b0000000: decode.func = FADD_S;
               7'b0000001: decode.func = FADD_D;
@@ -490,14 +531,13 @@ module tb_func_decode;
               7'b0001111: decode.func = FDIV_Q;
               default: return '0;
             endcase
-            decode.rs1      = instr[19:15];
-            decode.rs2      = instr[24:20];
-            decode.rd       = instr[11:7];
-            decode.imm[2:0] = instr[14:12];
           end
           //--------------------------------------------------------------------
           7'b0010000, 7'b0010001, 7'b0010011, 7'b0010100, 7'b0010101,
           7'b0010111, 7'b1010000, 7'b1010001, 7'b1010011 : begin
+            decode.rs1 = instr[19:15];
+            decode.rs2 = instr[24:20];
+            decode.rd  = instr[11:7];
             case ({
               instr[31:25], instr[14:12]
             })
@@ -527,14 +567,14 @@ module tb_func_decode;
               10'b1010011_010: decode.func = FEQ_Q;
               default: return '0;
             endcase
-            decode.rs1 = instr[19:15];
-            decode.rs2 = instr[24:20];
-            decode.rd  = instr[11:7];
           end
           //--------------------------------------------------------------------
           7'b0100000, 7'b0100001, 7'b0100011, 7'b0101100, 7'b0101101,
           7'b0101111, 7'b1100000, 7'b1100001, 7'b1100011, 7'b1101000,
           7'b1101001, 7'b1101011 : begin
+            decode.rs1 = instr[19:15];
+            decode.rd  = instr[11:7];
+            decode.rm  = instr[14:12];
             case ({
               instr[31:25], instr[24:20]
             })
@@ -573,12 +613,11 @@ module tb_func_decode;
               12'b1101011_00011: decode.func = FCVT_Q_LU;
               default: return '0;
             endcase
-            decode.rs1      = instr[19:15];
-            decode.rd       = instr[11:7];
-            decode.imm[2:0] = instr[14:12];
           end
           //--------------------------------------------------------------------
           7'b1110000, 7'b1110001, 7'b1110011, 7'b1111000, 7'b1111001: begin
+            decode.rs1 = instr[19:15];
+            decode.rd  = instr[11:7];
             case ({
               instr[31:25], instr[24:20], instr[14:12]
             })
@@ -591,22 +630,19 @@ module tb_func_decode;
               15'b1111001_00000_000: decode.func = FMV_D_X;
               default: return '0;
             endcase
-            decode.rs1 = instr[19:15];
-            decode.rd  = instr[11:7];
           end
           //--------------------------------------------------------------------
           default: return '0;
         endcase
-
-
-        decode.rs1      = instr[19:15];
-        decode.rs2      = instr[24:20];
-        decode.rd       = instr[11:7];
-        decode.imm[2:0] = instr[14:12];
-
       end
 
       7'h63: begin
+        decode.rs1       = instr[19:15];
+        decode.rs2       = instr[24:20];
+        decode.imm[12]   = instr[31];
+        decode.imm[10:5] = instr[30:25];
+        decode.imm[4:1]  = instr[11:8];
+        decode.imm[11]   = instr[7];
         case (instr[14:12])
           3'b000:  decode.func = BEQ;
           3'b001:  decode.func = BNE;
@@ -616,12 +652,6 @@ module tb_func_decode;
           3'b111:  decode.func = BGEU;
           default: return '0;
         endcase
-        decode.rs1       = instr[19:15];
-        decode.rs2       = instr[24:20];
-        decode.imm[12]   = instr[31];
-        decode.imm[10:5] = instr[30:25];
-        decode.imm[4:1]  = instr[11:8];
-        decode.imm[11]   = instr[7];
       end
 
       7'h67: begin
@@ -635,19 +665,33 @@ module tb_func_decode;
       end
 
       7'h6F: begin
-        decode.func       = JAL;
         decode.rd         = instr[11:7];
         decode.imm[20]    = instr[31];
         decode.imm[10:1]  = instr[30:21];
         decode.imm[11]    = instr[20];
         decode.imm[19:12] = instr[19:12];
+        decode.func       = JAL;
       end
 
       7'h73: begin
         case (instr[31:7])
           25'b000000000000_00000_000_00000: decode.func = ECALL;
           25'b000000000001_00000_000_00000: decode.func = EBREAK;
-          default: return '0;
+          default: begin
+            if (instr[14]) decode.uimm[4:0] = instr[19:15];
+            else decode.rs1 = instr[19:15];
+            decode.csr = instr[31:20];
+            decode.rd  = instr[11:7];
+            case (instr[14:12])
+              3'b001:  decode.func = CSRRW;
+              3'b010:  decode.func = CSRRS;
+              3'b011:  decode.func = CSRRC;
+              3'b101:  decode.func = CSRRWI;
+              3'b110:  decode.func = CSRRSI;
+              3'b111:  decode.func = CSRRCI;
+              default: return '0;
+            endcase
+          end
         endcase
       end
 
