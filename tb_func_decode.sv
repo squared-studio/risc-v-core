@@ -1,3 +1,32 @@
+/*
+
+.---------------------------------------------------------------------------------------------.
+|                         Floating-Point Control and Status Registers                         |
+.--------.------------.----------.------------------------------------------------------------.
+| Number | Privilege  | Name     | Description                                                |
+|--------+------------+----------+------------------------------------------------------------|
+| 0x001  | Read/write | fflags   | Floating-Point Accrued Exceptions.                         |
+| 0x002  | Read/write | frm      | Floating-Point Dynamic Rounding Mode.                      |
+| 0x003  | Read/write | fcsr     | Floating-Point Control and Status Register (frm + fflags). |
+'--------'------------'----------'------------------------------------------------------------'
+
+.---------------------------------------------------------------------------------------------.
+|                                     Counters and Timers                                     |
+|--------.------------.----------.------------------------------------------------------------|
+| Number | Privilege  | Name     | Description                                                |
+|--------+------------+----------+------------------------------------------------------------|
+| 0xC00  | Read-only  | cycle    | Cycle counter for RDCYCLE instruction.                     |
+| 0xC01  | Read-only  | time     | Timer for RDTIME instruction.                              |
+| 0xC02  | Read-only  | instret  | Instructions-retired counter for RDINSTRET instruction.    |
+| 0xC80  | Read-only  | cycleh   | Upper 32 bits of cycle, RV32I only.                        |
+| 0xC81  | Read-only  | timeh    | Upper 32 bits of time, RV32I only.                         |
+| 0xC82  | Read-only  | instreth | Upper 32 bits of instret, RV32I only.                      |
+'--------'------------'----------'------------------------------------------------------------'
+
+Table 24.3: RISC-V control and status register (CSR) address map.
+
+*/
+
 module tb_func_decode;
 
   initial begin
@@ -204,6 +233,17 @@ module tb_func_decode;
     XORI
   } func_t;
 
+  typedef enum logic [2:0] {
+    RNE = 0,
+    RTZ = 1,
+    RDN = 2,
+    RUP = 3,
+    RMM = 4,
+    RM_RES_5 = 5,
+    RM_RES_6 = 6,
+    DYN = 7
+  } rm_t;
+
   typedef struct packed {
     func_t       func;
     logic [4:0]  rs1;
@@ -220,7 +260,7 @@ module tb_func_decode;
     logic aq;
     logic rl;
 
-    logic [2:0] rm;
+    rm_t rm;
 
     logic [31:0] uimm;
     logic [11:0] csr;
@@ -455,7 +495,7 @@ module tb_func_decode;
         decode.rs2 = instr[24:20];
         decode.rs3 = instr[31:27];
         decode.rd  = instr[11:7];
-        decode.rm  = instr[14:12];
+        decode.rm  = rm_t'(instr[14:12]);
         case (instr[26:25])
           2'b00:   decode.func = FMADD_S;
           2'b00:   decode.func = FMADD_D;
@@ -469,7 +509,7 @@ module tb_func_decode;
         decode.rs2 = instr[24:20];
         decode.rs3 = instr[31:27];
         decode.rd  = instr[11:7];
-        decode.rm  = instr[14:12];
+        decode.rm  = rm_t'(instr[14:12]);
         case (instr[26:25])
           2'b00:   decode.func = FMSUB_S;
           2'b00:   decode.func = FMSUB_D;
@@ -483,7 +523,7 @@ module tb_func_decode;
         decode.rs2 = instr[24:20];
         decode.rs3 = instr[31:27];
         decode.rd  = instr[11:7];
-        decode.rm  = instr[14:12];
+        decode.rm  = rm_t'(instr[14:12]);
         case (instr[26:25])
           2'b00:   decode.func = FNMSUB_S;
           2'b00:   decode.func = FNMSUB_D;
@@ -497,7 +537,7 @@ module tb_func_decode;
         decode.rs2 = instr[24:20];
         decode.rs3 = instr[31:27];
         decode.rd  = instr[11:7];
-        decode.rm  = instr[14:12];
+        decode.rm  = rm_t'(instr[14:12]);
         case (instr[26:25])
           2'b00:   decode.func = FNMADD_S;
           2'b00:   decode.func = FNMADD_D;
@@ -515,7 +555,7 @@ module tb_func_decode;
             decode.rs1 = instr[19:15];
             decode.rs2 = instr[24:20];
             decode.rd  = instr[11:7];
-            decode.rm  = instr[14:12];
+            decode.rm  = rm_t'(instr[14:12]);
             case (instr[31:25])
               7'b0000000: decode.func = FADD_S;
               7'b0000001: decode.func = FADD_D;
@@ -574,7 +614,7 @@ module tb_func_decode;
           7'b1101001, 7'b1101011 : begin
             decode.rs1 = instr[19:15];
             decode.rd  = instr[11:7];
-            decode.rm  = instr[14:12];
+            decode.rm  = rm_t'(instr[14:12]);
             case ({
               instr[31:25], instr[24:20]
             })
