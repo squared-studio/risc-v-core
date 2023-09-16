@@ -347,7 +347,7 @@ module tb_func_decode;
 
       7'h17: begin
         decode.rd         = instr[11:7];
-        decode.imm[31:12] = instr[31:12];
+        decode.imm[31:12] = instr[31:12]; // TODO CHECK
         decode.func       = AUIPC;
       end
 
@@ -740,11 +740,98 @@ module tb_func_decode;
   endfunction
 
   initial begin
-    $display("%p", decode('h06f00293));
-    $display("%p", decode('h0de00313));
-    $display("%p", decode('h006283b3));
-    $display("%p", decode('h006283b0));
+    $display("%p", decode('h10000517));
+    $display("%p", decode('h00052503));
+    $display("%p", decode('h01c000ef));
+    $display("%p", decode('h00050593));
+    $display("%p", decode('h10000517));
+    $display("%p", decode('hff052503));
+    $display("%p", decode('h04c000ef));
+    $display("%p", decode('h00a00893));
+    $display("%p", decode('h00000073));
+    $display("%p", decode('hff010113));
+    $display("%p", decode('h00112423));
+    $display("%p", decode('h00a12023));
+    $display("%p", decode('hfff50293));
+    $display("%p", decode('h0002d863));
+    $display("%p", decode('h00100513));
+    $display("%p", decode('h01010113));
+    $display("%p", decode('h00008067));
+    $display("%p", decode('hfff50513));
+    $display("%p", decode('hfddff0ef));
+    $display("%p", decode('h00050313));
+    $display("%p", decode('h00012503));
+    $display("%p", decode('h00812083));
+    $display("%p", decode('h01010113));
+    $display("%p", decode('h02650533));
+    $display("%p", decode('h00008067));
+    $display("%p", decode('h00050293));
+    $display("%p", decode('h00058313));
+    $display("%p", decode('h10000517));
+    $display("%p", decode('hf9850513));
+    $display("%p", decode('h00400893));
+    $display("%p", decode('h00000073));
+    $display("%p", decode('h00028513));
+    $display("%p", decode('h00100893));
+    $display("%p", decode('h00000073));
+    $display("%p", decode('h10000517));
+    $display("%p", decode('hf9050513));
+    $display("%p", decode('h00400893));
+    $display("%p", decode('h00000073));
+    $display("%p", decode('h00030513));
+    $display("%p", decode('h00100893));
+    $display("%p", decode('h00000073));
+    $display("%p", decode('h00008067));
     $finish;
   end
 
 endmodule
+
+
+
+
+
+/*
+    00:        10000517        auipc x10 0x10000
+    04:        00052503        lw x10 0 x10
+    08:        01c000ef        jal x1 28 <fact>
+    0c:        00050593        addi x11 x10 0
+    10:        10000517        auipc x10 0x10000
+    14:        ff052503        lw x10 -16 x10
+    18:        04c000ef        jal x1 76 <printResult>
+    1c:        00a00893        addi x17 x0 10
+    20:        00000073        ecall
+    24:        ff010113        addi x2 x2 -16
+    28:        00112423        sw x1 8 x2
+    2c:        00a12023        sw x10 0 x2
+    30:        fff50293        addi x5 x10 -1
+    34:        0002d863        bge x5 x0 16 <nfact>
+    38:        00100513        addi x10 x0 1
+    3c:        01010113        addi x2 x2 16
+    40:        00008067        jalr x0 x1 0
+    44:        fff50513        addi x10 x10 -1
+    48:        fddff0ef        jal x1 -36 <fact>
+    4c:        00050313        addi x6 x10 0
+    50:        00012503        lw x10 0 x2
+    54:        00812083        lw x1 8 x2
+    58:        01010113        addi x2 x2 16
+    5c:        02650533        mul x10 x10 x6
+    60:        00008067        jalr x0 x1 0
+    64:        00050293        addi x5 x10 0
+    68:        00058313        addi x6 x11 0
+    6c:        10000517        auipc x10 0x10000
+    70:        f9850513        addi x10 x10 -104
+    74:        00400893        addi x17 x0 4
+    78:        00000073        ecall
+    7c:        00028513        addi x10 x5 0
+    80:        00100893        addi x17 x0 1
+    84:        00000073        ecall
+    88:        10000517        auipc x10 0x10000
+    8c:        f9050513        addi x10 x10 -112
+    90:        00400893        addi x17 x0 4
+    94:        00000073        ecall
+    98:        00030513        addi x10 x6 0
+    9c:        00100893        addi x17 x0 1
+    a0:        00000073        ecall
+    a4:        00008067        jalr x0 x1 0
+*/
