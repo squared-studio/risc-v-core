@@ -1,0 +1,37 @@
+name: tb_dev_issue
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  create_issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create issues
+        run: |
+          for file in rtl/*.sv; do
+            folder=$(basename "${file}" | sed "s/\.sv/_tb/g")
+            title=$(echo "auto ${folder}")
+            body=$(echo "Testbench Needed")
+            echo "Checking if issue '${title}' exists"
+            issue_exists=$(gh issue list --search "${title}" --json number -q '.[0].number')
+            if [ ! -d "tb/${folder}" ]; then
+              if [ -z "${issue_exists}" ]; then
+                echo "Creating issue '${title}'"
+                gh issue create --title "${title}" --body "${body}"
+              else
+                echo "Issue '${title}' already exists"
+              fi
+            else
+              if [ ! -z "${issue_exists}" ]; then
+                echo "Auto-closing '${title}'"
+                gh issue close ${issue_exists} --comment "Auto-closing issue"
+              fi
+            fi            
+          done
+        env:
+          GH_TOKEN: ${{ secrets.ISSUE_MAINTAIN }}

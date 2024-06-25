@@ -1,0 +1,4 @@
+.PHONY: ci_vivado_run
+ci_vivado_run:
+	@> ___CI_REPORT;
+
