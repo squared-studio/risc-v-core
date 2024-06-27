@@ -220,18 +220,11 @@ package rv64g_pkg;
     logic [4:0]  rd;
     logic [4:0]  rs1;
     logic [4:0]  rs2;
-    logic [4:0]  rs3;
-    logic [5:0]  shamt;
     logic [31:0] imm;
-    logic [31:0] uimm;
-    logic [3:0]  fm;
-    logic [3:0]  pred;
-    logic [3:0]  succ;
-    logic        aq;
-    logic        rl;
-    rm_t         rm;
     logic [11:0] csr;
+    rm_t         rm;
   } decoded_instr_t;
+  // imm : imm - uimm - {fm[3:0], pred[3:0], succ[3:0]} - shamt[4:0] - {aq, rl} - rs3[4:0]
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-LOCALPARAMS GENERATED
