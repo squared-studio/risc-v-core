@@ -226,7 +226,8 @@ vivado:
 		-i $(INC_DIR) \
 		-sv -L UVM \
 		-L TBF=$(TBF_LIB) \
-		-L RTL=$(DES_LIB)
+		-L RTL=$(DES_LIB) \
+		-L INTF=$(INTF_LIB)
 	@cd $(TOP_DIR); xelab \
 		-f $(CONFIG_PATH)/xelab \
 		$(TOP) -s top
