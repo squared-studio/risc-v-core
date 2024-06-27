@@ -93,6 +93,9 @@ help:
 	@echo -e "\033[3;30mTo run simulation on the initial block of an RTL, type:\033[0m"
 	@echo -e "\033[1;38mmake rtl_init_sim RTL=<rtl>\033[0m"
 	@echo -e ""
+	@echo -e "\033[3;30mTo copy an instance of any rtl, type:\033[0m"
+	@echo -e "\033[1;38mmake copy_instance RTL=<rtl>\033[0m"
+	@echo -e ""
 	@echo -e "\033[3;30mTo open schematic using vivado, type:\033[0m"
 	@echo -e "\033[1;38mmake schematic RTL=<rtl>\033[0m"
 	@echo -e ""
@@ -102,9 +105,27 @@ help:
 	@echo -e "\033[3;30mTo run CI check, type:\033[0m"
 	@echo -e "\033[1;38mmake CI\033[0m"
 	@echo -e ""
+	@echo -e "\033[3;30mTo run a test with iverilog, type:\033[0m"
+	@echo -e "\033[1;38mmake iverilog TOP=<tb_top>\033[0m"
+	@echo -e ""
+	@echo -e "\033[3;30mTo generate a list of all Verilog/SystemVerilog files, type:\033[0m"
+	@echo -e "\033[1;38mmake gen_check_list\033[0m"
+	@echo -e ""
 	@echo -e "\033[3;30mTo generate flist of an RTL, type:\033[0m"
 	@echo -e "\033[1;38mmake flist RTL=<rtl>\033[0m"
 	@echo -e ""
+	@echo -e "\033[3;30mTo update documents, type:\033[0m"
+	@echo -e "\033[1;38mmake update_doc_list\033[0m"
+	@echo -e ""
+
+.PHONY: gen_check_list
+gen_check_list:
+	@$(eval CHECK_LIST := $(shell find inc -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -name "*.svh"))
+	@$(eval CHECK_LIST += $(shell find rtl -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -name "*.svh"))
+	@$(eval CHECK_LIST += $(shell find intf -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -name "*.svh"))
+	@$(eval CHECK_LIST += $(shell find tb -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -name "*.svh"))
+	@($(foreach word, $(CHECK_LIST), echo "[](./$(word))";)) | $(CLIP)
+	@echo -e "\033[2;35mList copied to clipboard\033[0m"
 
 .PHONY: clean
 clean:
@@ -256,6 +277,25 @@ ci_print:
 	@grep -r "FAIL" ./___CI_REPORT | tee ___CI_ERROR
 
 ####################################################################################################
+# Lint (Verilator)
+####################################################################################################
+
+.PHONY: verilator_lint
+verilator_lint:
+	@($(foreach word, $(DES_LIB), \
+		verilator --lint-only $(DES_LIB) --top-module $(shell basename -s .sv $(word));))
+
+####################################################################################################
+# Simulate (iverilog)
+####################################################################################################
+
+.PHONY: iverilog
+iverilog: clean
+	@echo "$(TOP)" > ___TOP
+	@cd $(TOP_DIR); iverilog -I $(INC_DIR) -g2012 -o $(TOP).out -s $(TOP) -l $(DES_LIB) $(TBF_LIB)
+	@cd $(TOP_DIR); vvp $(TOP).out
+
+####################################################################################################
 # Waveform (GTKWave)
 ####################################################################################################
 
@@ -275,7 +315,92 @@ gwave:
 vwave:
 	@cd $(TOP_DIR); xsim top -f $(CONFIG_PATH)/xsim -gui
 
-##################################################################################################
+####################################################################################################
+# Copy Instance
+####################################################################################################
+
+.PHONY: module_header
+module_header:
+	@sed -n '/^module /,/);$$/p' $(RTL_FILE) \
+		| sed "s/\/\/.*//g" \
+		| sed "s/  *$$//g" \
+		| sed -z "s/\n\n/\n/g" \
+		| sed -z "s/\n\n/\n/g" \
+		> ___module_header
+
+.PHONY: module_param
+module_param:
+	@cat ___module_header \
+		| grep -E -w "parameter" \
+		| sed "s/,//g" \
+		| sed "s/$$/;/g" \
+		| sed "s/ *parameter */localparam /g" \
+		> ___module_param
+
+.PHONY: module_port
+module_port:
+	@cat ___module_header \
+		| grep -E -w "input|output|inout" \
+		| sed "s/,//g" \
+		| sed "s/$$/;/g" \
+		| sed "s/ *input *\| *output *\| *inout *//g" \
+		| sed "s/_ni;/_ni = '1;/g" \
+		| sed "s/_i;/_i = '0;/g" \
+		>___module_port
+
+.PHONY: module_raw_param
+module_raw_param:
+	@cat ___module_param \
+		| sed "s/\[.*\]//g" \
+		| sed "s/;//g" \
+		| sed "s/  *=.*//g" \
+		| sed "s/localparam.* //g" \
+		> ___module_raw_param
+
+.PHONY: module_raw_port
+module_raw_port:
+	@cat ___module_port \
+		| sed "s/\[.*\]//g" \
+		| sed "s/;//g" \
+		| sed "s/  *=.*//g" \
+		| sed "s/^.* //g" \
+		> ___module_raw_port
+
+.PHONY: module_raw_inst
+module_raw_inst:
+	@echo "$(RTL) #(" > ___module_raw_inst
+	@$(foreach word, $(shell cat ___module_raw_param), echo "  .$(word)($(word))," >> ___module_raw_inst;)
+	@echo ") u_$(RTL) (" >> ___module_raw_inst
+	@$(foreach word, $(shell cat ___module_raw_port), echo "  .$(word)($(word))," >> ___module_raw_inst;)
+	@echo ");" >> ___module_raw_inst
+	
+.PHONY: module_inst
+module_inst:
+	@cat ___module_raw_inst \
+		| sed -z "s/,\n)/\n)/g" > ___module_inst
+		
+.PHONY: copy_instance
+copy_instance:
+	@$(MAKE) clean
+	@$(MAKE) module_header RTL=$(RTL)
+	@$(MAKE) module_param
+	@$(MAKE) module_port
+	@$(MAKE) module_raw_param
+	@$(MAKE) module_raw_port
+	@$(MAKE) module_raw_inst
+	@$(MAKE) module_inst
+	@echo "" > ___TO_COPY
+	@cat ___module_param >> ___TO_COPY
+	@echo "" >> ___TO_COPY
+	@cat ___module_port >> ___TO_COPY
+	@echo "" >> ___TO_COPY
+	@cat ___module_inst >> ___TO_COPY
+	@echo "" >> ___TO_COPY
+	@cat ___TO_COPY | $(CLIP)
+	@$(MAKE) clean
+	@echo -e "\033[2;35m$(RTL) instance copied to clipboard\033[0m"
+
+####################################################################################################
 # Create TB
 ####################################################################################################
 
@@ -286,7 +411,7 @@ create_tb:
 		(	\
 			mkdir -p ./tb/$(TOP) && cat tb_model.sv	\
 			  | sed "s/^module tb_model;$$/module $(TOP);/g" \
-			  | sed "s/^Author :.*/Author : $(GIT_UNAME) ($(GIT_UMAIL))/g" \
+			  | sed "s/.*Author :.*/Author : $(GIT_UNAME) ($(GIT_UMAIL))/g" \
 				> ./tb/$(TOP)/$(TOP).sv \
 		)
 	@code ./tb/$(TOP)/$(TOP).sv
@@ -302,7 +427,47 @@ create_rtl:
 		(	\
 			cat rtl_model.sv	\
 			  | sed "s/^module rtl_model #($$/module $(RTL) #(/g" \
-			  | sed "s/^Author :.*/Author : $(GIT_UNAME) ($(GIT_UMAIL))/g" \
+			  | sed "s/.*Author :.*/Author : $(GIT_UNAME) ($(GIT_UMAIL))/g" \
 				> ./rtl/$(RTL).sv \
 		)
 	@code ./rtl/$(RTL).sv
+
+####################################################################################################
+# Update Doc List
+####################################################################################################
+
+.PHONY: update_doc_list
+update_doc_list: create_all_docs
+	@cat readme_base.md > readme.md
+	@echo "" >> readme.md
+	@echo "## RTL" >> readme.md
+	@$(foreach file, $(shell find ./docs/rtl -name "*.md"), $(MAKE) get_rtl_doc_header FILE=$(file);)
+	@echo "" >> readme.md
+	@echo "## INCLUDE" >> readme.md
+	@$(foreach file, $(shell find ./docs/inc -name "*.md"), $(MAKE) get_inc_doc_header FILE=$(file);)
+	@echo "" >> readme.md
+
+.PHONY: clear_all_docs
+clear_all_docs:
+	@rm -rf docs/rtl/*.md
+	@rm -rf docs/rtl/*_top.svg
+	@git submodule update --init ./sub/documenter
+
+.PHONY: create_all_docs
+create_all_docs: clear_all_docs
+	@$(foreach file, $(DES_LIB), $(if $(shell echo $(file) | sed "s/.*__no_upload__.*//g"), $(MAKE) gen_doc FILE=$(file), echo "");)
+
+.PHONY: get_rtl_doc_header
+get_rtl_doc_header:
+	@$(eval HEADER := $(shell cat $(FILE) | grep -E "# " | sed "s/^# //g" | sed "s/ .*//g"))
+	@echo "[$(HEADER)]($(FILE))<br>" >> readme.md
+
+.PHONY: get_inc_doc_header
+get_inc_doc_header:
+	@$(eval HEADER := $(shell echo $(FILE) | sed "s/\.\/docs\/inc\///g" | sed "s/\.md$$//g"))
+	@echo "[$(HEADER)]($(FILE))<br>" >> readme.md
+
+.PHONY: gen_doc
+gen_doc:
+	@echo "Creating document for $(FILE)"
+	@$(PYTHON) ./sub/documenter/sv_documenter.py $(FILE) ./docs/rtl

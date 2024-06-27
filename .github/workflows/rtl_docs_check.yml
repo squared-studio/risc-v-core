@@ -13,7 +13,7 @@ jobs:
     - name: Check docs
       run: |
         git submodule update --init sub/documenter
-        bash update_docs.sh
+        make update_doc_list
         git diff > ___DIFF
 
     - name: Fail if different
