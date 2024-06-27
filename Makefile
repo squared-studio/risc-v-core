@@ -10,6 +10,7 @@ RTL         = $(shell cat ___RTL)
 TOP_DIR     = $(shell find $(realpath ./tb/) -wholename "*$(TOP)/$(TOP).sv" | sed "s/\/$(TOP).sv//g")
 TBF_LIB     = $(shell find $(TOP_DIR) -name "*.v" -o -name "*.sv")
 DES_LIB     = $(shell find $(realpath ./rtl/) -name "*.v" -o -name "*.sv")
+INTF_LIB    = $(shell find $(realpath ./intf/) -name "*.sv")
 INC_DIR     = $(realpath ./inc)
 RTL_FILE    = $(shell find $(realpath ./rtl/) -name "$(RTL).sv")
 CONFIG      = default
