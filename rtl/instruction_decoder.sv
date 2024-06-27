@@ -9,6 +9,7 @@ module instruction_decoder
   import rv64g_pkg::*;
 (
     input logic [31:0] code_i,
+
     output decoded_instr_t cmd_o
 );
 

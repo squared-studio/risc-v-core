@@ -9,7 +9,8 @@ module decoder_reduction_or
 #(
     parameter int NUM_INPUTS = 8
 ) (
-    input  decoded_instr_t wire_i[NUM_INPUTS],
+    input decoded_instr_t wire_i[NUM_INPUTS],
+
     output decoded_instr_t wire_o
 );
 
