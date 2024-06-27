@@ -7,7 +7,7 @@
 
 ## Description
 
-Write markdown documentation for this systemverilog module:
+Write a markdown documentation for this systemverilog module:
 
 ## Parameters
 |Name|Type|Dimension|Default Value|Description|

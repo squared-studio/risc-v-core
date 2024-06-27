@@ -443,9 +443,6 @@ update_doc_list: create_all_docs
 	@echo "## RTL" >> readme.md
 	@$(foreach file, $(shell find ./docs/rtl -name "*.md"), $(MAKE) get_rtl_doc_header FILE=$(file);)
 	@echo "" >> readme.md
-	@echo "## INCLUDE" >> readme.md
-	@$(foreach file, $(shell find ./docs/inc -name "*.md"), $(MAKE) get_inc_doc_header FILE=$(file);)
-	@echo "" >> readme.md
 
 .PHONY: clear_all_docs
 clear_all_docs:
