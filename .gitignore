@@ -1,7 +1,7 @@
 ___*
 __no_upload__
 .Xil/
-model/*.exe
+*.exe
 *.jou
 *.log
 *.out
