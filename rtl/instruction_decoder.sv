@@ -237,7 +237,7 @@ module instruction_decoder
     if (decoder_X.funct == INVALID) decoder_X = '0;
   end
 
-  always_comb OAbegin  // decoder_A
+  always_comb begin  // decoder_A
     decoder_A = '0;
     // TODO Sakib vai
     decoder_A.rd  = code_i[11:7];
@@ -247,31 +247,31 @@ module instruction_decoder
     decoder_A.aq = code_i[26];
     if(code_i[6:0] == 'b0101111) begin
       case(
-	{code_i[31:27],code_i[14:12]
+        {code_i[31:27],code_i[14:12]
       })
-	'b00010_010 : decoder_A.funct = LR_W;
-	'b00011_010 : decoder_A.funct = SC_W;
-	'b00001_010 : decoder_A.funct = AMOSWAP_W;
-	'b00000_010 : decoder_A.funct = AMOADD_W;
-	'b00100_010 : decoder_A.funct = AMOXOR_W;
-	'b01100_010 : decoder_A.funct = AMOAND_W;
-	'b01000_010 : decoder_A.funct = AMOOR_W;
-	'b10000_010 : decoder_A.funct = AMOMIN_W;
-	'b10100_010 : decoder_A.funct = AMOMAX_W;
-	'b11000_010 : decoder_A.funct = AMOMINU_W;
-	'b11100_010 : decoder_A.funct = AMOMAXU_W;
-	'b00010_010 : decoder_A.funct = LR_D;
-	'b00011_010 : decoder_A.funct = SC_D;
-	'b00001_010 : decoder_A.funct = AMOSWAP_D;
-	'b00000_010 : decoder_A.funct = AMOADD_D;
-	'b00100_010 : decoder_A.funct = AMOXOR_D;
-	'b01100_010 : decoder_A.funct = AMOAND_D;
-	'b01000_010 : decoder_A.funct = AMOOR_D;
-	'b10000_010 : decoder_A.funct = AMOMIN_D;
-	'b10100_010 : decoder_A.funct = AMOMAX_D;
-	'b11000_010 : decoder_A.funct = AMOMINU_D;
-	'b11100_010 : decoder_A.funct = AMOMAXU_D;
-	default: decoder_A.funct = INVALID;
+        'b00010_010 : decoder_A.funct = LR_W;
+        'b00011_010 : decoder_A.funct = SC_W;
+        'b00001_010 : decoder_A.funct = AMOSWAP_W;
+        'b00000_010 : decoder_A.funct = AMOADD_W;
+        'b00100_010 : decoder_A.funct = AMOXOR_W;
+        'b01100_010 : decoder_A.funct = AMOAND_W;
+        'b01000_010 : decoder_A.funct = AMOOR_W;
+        'b10000_010 : decoder_A.funct = AMOMIN_W;
+        'b10100_010 : decoder_A.funct = AMOMAX_W;
+        'b11000_010 : decoder_A.funct = AMOMINU_W;
+        'b11100_010 : decoder_A.funct = AMOMAXU_W;
+        'b00010_010 : decoder_A.funct = LR_D;
+        'b00011_010 : decoder_A.funct = SC_D;
+        'b00001_010 : decoder_A.funct = AMOSWAP_D;
+        'b00000_010 : decoder_A.funct = AMOADD_D;
+        'b00100_010 : decoder_A.funct = AMOXOR_D;
+        'b01100_010 : decoder_A.funct = AMOAND_D;
+        'b01000_010 : decoder_A.funct = AMOOR_D;
+        'b10000_010 : decoder_A.funct = AMOMIN_D;
+        'b10100_010 : decoder_A.funct = AMOMAX_D;
+        'b11000_010 : decoder_A.funct = AMOMINU_D;
+        'b11100_010 : decoder_A.funct = AMOMAXU_D;
+        default: decoder_A.funct = INVALID;
       endcase
     end
     if (decoder_A.funct == INVALID) decoder_A = '0;
