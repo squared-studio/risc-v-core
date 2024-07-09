@@ -1,4 +1,5 @@
 .PHONY: ci_vivado_run
 ci_vivado_run:
 	@> ___CI_REPORT;
+	@make --no-print-directory vivado TOP=placeholder CONFIG=default
 
