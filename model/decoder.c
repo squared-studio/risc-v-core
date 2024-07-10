@@ -12,6 +12,31 @@ int sign_ext (uint32_t num, int len) {
   return result;
 }
 
+#define U_TYPE(__FUNC__)                            \
+  result.func = #__FUNC__;                          \
+  result.rd   = (code >> 7) & 0x1F;                 \
+  result.imm  = sign_ext(code & 0xFFFFF000, 32);    \
+
+
+#define J_TYPE(__FUNC__)                            \
+  result.func = #__FUNC__;                          \
+  result.rd   = (code >> 7) & 0x1F;                 \
+  int temp;                                         \
+  temp = 0;                                         \
+  temp = temp | ((0x000FF000 & code) >> 0);         \
+  temp = temp | ((0x00100000 & code) >> 9);         \
+  temp = temp | ((0x7FE00000 & code) >> 20);        \
+  temp = temp | ((0x80000000 & code) >> 11);        \
+  result.imm  = sign_ext(temp,21);                  \
+
+
+#define I_TYPE(__FUNC__)                            \
+  result.func = #__FUNC__;                          \
+  result.rd   = (code >> 7) & 0x1F;                 \
+  result.rs1  = (code >> 15) & 0x1F;                \
+  result.imm  = sign_ext((code >> 20) & 0xFFF, 12); \
+
+
 decoded_instr_t decode (uint32_t code) {
   decoded_instr_t result;
   result.func = "INVALID";
@@ -22,34 +47,19 @@ decoded_instr_t decode (uint32_t code) {
   result.imm = 0;
 
   if ((code & 0x0000007F) == 0x00000037) {
-    result.func = "LUI";
-    result.rd   = (code >> 7) & 0x1F;
-    result.imm  = sign_ext(code & 0xFFFFF000, 32);
+    U_TYPE(LUI);
   }
 
   if ((code & 0x0000007F) == 0x00000017) {
-    result.func = "AUIPC";
-    result.rd   = (code >> 7) & 0x1F;
-    result.imm  = sign_ext(code & 0xFFFFF000, 32);
+    U_TYPE(AUIPC);
   }
 
   if ((code & 0x0000007F) == 0x0000006F) {
-    result.func = "JAL";
-    result.rd   = (code >> 7) & 0x1F;
-    int temp;
-    temp = 0;
-    temp = temp | ((0x000FF000 & code) >> 0);
-    temp = temp | ((0x00100000 & code) >> 9);
-    temp = temp | ((0x7FE00000 & code) >> 20);
-    temp = temp | ((0x80000000 & code) >> 10);
-    result.imm  = sign_ext(temp,21);
+    J_TYPE(JAL)
   }
 
   if ((code & 0x0000707F) == 0x00000067) {
-    result.func = "JALR";
-    result.rd   = (code >> 7) & 0x1F;
-    result.rs1  = (code >> 15) & 0x1F;
-    result.imm  = sign_ext((code >> 20) & 0xFFF, 12);
+    I_TYPE(JALR)
   }
 
   return result;
