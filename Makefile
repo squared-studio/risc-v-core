@@ -16,33 +16,34 @@ RTL_FILE    = $(shell find $(realpath ./rtl/) -name "$(RTL).sv")
 CONFIG      = default
 CONFIG_PATH = $(TOP_DIR)/config/$(CONFIG)
 
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "xsim.dir")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name ".Xil")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.out")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.vcd")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.log")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.wdb")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.jou")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.pb")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___temp")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___CI_REPORT_TEMP")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___list")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___flist")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___LINT_ERROR")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___list")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_header")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_param")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_raw_param")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_port")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_raw_port")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_inst")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_param")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_port")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_raw_inst")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_raw_param")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___module_raw_port")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "___temp")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___TO_COPY")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name ".Xil")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.jou")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.log")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.out")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.pb")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.vcd")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "*.wdb")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.cache")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.hw")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.ip_user_files")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.sim")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.xpr")
-CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.tcl")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.runs")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.sim")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.tcl")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "top.xpr")
+CLEAN_TARGETS += $(shell find $(realpath ./) -name "xsim.dir")
 
 OS = $(shell uname)
 ifeq ($(OS),Linux)
@@ -74,10 +75,10 @@ endif
 help:
 	@echo -e ""
 	@echo -e "\033[3;30mTo create or open a testbench, type:\033[0m"
-	@echo -e "\033[1;38mmake create_tb TOP=<tb_top>\033[0m"
+	@echo -e "\033[1;38mmake tb TOP=<tb_top>\033[0m"
 	@echo -e ""
 	@echo -e "\033[3;30mTo create or open a rtl, type:\033[0m"
-	@echo -e "\033[1;38mmake create_rtl RTL=<rtl>\033[0m"
+	@echo -e "\033[1;38mmake rtl RTL=<rtl>\033[0m"
 	@echo -e ""
 	@echo -e "\033[3;30mTo run a test with vivado, type:\033[0m"
 	@echo -e "\033[1;38mmake simulate TOP=<tb_top>\033[0m"
@@ -137,6 +138,13 @@ clean:
 # FLIST (Vivado)
 ####################################################################################################
 
+define compile_rtl
+$(eval SUB_LIB := $(shell echo "$(wordlist 1, 25,$(COMPILE_LIB))"))
+xvlog -i $(INC_DIR) -sv $(SUB_LIB)
+$(eval COMPILE_LIB := $(wordlist 26, $(words $(COMPILE_LIB)), $(COMPILE_LIB)))
+$(if $(COMPILE_LIB), $(call compile_rtl))
+endef
+
 .PHONY: find_rtl
 find_rtl:
 	@find $(realpath ./rtl/) -iname "*$(RTL)*.sv"
@@ -144,7 +152,8 @@ find_rtl:
 .PHONY: list_modules
 list_modules: clean
 	@$(eval RTL_FILE := $(shell find rtl -name "$(RTL).sv"))
-	@xvlog -i $(INC_DIR) -sv -L RTL=$(DES_LIB)
+	@$(eval COMPILE_LIB := $(DES_LIB))
+	@$(call compile_rtl)
 	@xelab $(RTL) -s top
 	@cat xelab.log | grep -E "work" > ___list
 	@sed -i "s/.*work\.//gi" ___list;
@@ -155,7 +164,7 @@ list_modules: clean
 locate_files: list_modules
 	@$(eval _TMP := )
 	@$(foreach word,$(shell cat ___list), 		\
-		$(if $(findstring $(word),$(_TMP)), 		\
+		$(if $(filter $(word),$(_TMP)),					\
 			echo "", 															\
 			$(eval _TMP += $(word))								\
 				find -name "$(word).sv" >> ___flist	\
@@ -217,26 +226,22 @@ simulate: clean
 	@$(MAKE) config_list
 	$(MAKE) vivado TOP=$(TOP) CONFIG=$(CONFIG)
 
+define compile_tb
+$(eval SUB_LIB := $(shell echo "$(wordlist 1, 25,$(COMPILE_LIB))"))
+cd $(TOP_DIR); xvlog -f $(CONFIG_PATH)/xvlog -d SIMULATION --define CONFIG=\"$(CONFIG)\" -i $(INC_DIR) -sv $(SUB_LIB)
+$(eval COMPILE_LIB := $(wordlist 26, $(words $(COMPILE_LIB)), $(COMPILE_LIB)))
+$(if $(COMPILE_LIB), $(call compile_tb))
+endef
+
 .PHONY: vivado
 vivado:
 	@$(MAKE) config_touch
 	@touch $(TOP_DIR)/script.sh
 	@cd $(TOP_DIR); ./script.sh
-	@cd $(TOP_DIR); xvlog \
-		-f $(CONFIG_PATH)/xvlog \
-		-d SIMULATION \
-		--define CONFIG=\"$(CONFIG)\" \
-		-i $(INC_DIR) \
-		-sv -L UVM \
-		-L TBF=$(TBF_LIB) \
-		-L RTL=$(DES_LIB) \
-		-L INTF=$(INTF_LIB)
-	@cd $(TOP_DIR); xelab \
-		-f $(CONFIG_PATH)/xelab \
-		$(TOP) -s top
-	@cd $(TOP_DIR); xsim \
-		top -f $(CONFIG_PATH)/xsim \
-		-runall
+	@$(eval COMPILE_LIB := $(INTF_LIB) $(DES_LIB) $(TBF_LIB))
+	@$(call compile_tb)
+	@cd $(TOP_DIR); xelab -f $(CONFIG_PATH)/xelab $(TOP) -s top
+	@cd $(TOP_DIR); xsim top -f $(CONFIG_PATH)/xsim -runall
 
 .PHONY: rtl_init_sim
 rtl_init_sim: clean
@@ -411,8 +416,8 @@ copy_instance:
 # Create TB
 ####################################################################################################
 
-.PHONY: create_tb
-create_tb:
+.PHONY: tb
+tb:
 	@echo "$(TOP)" > ___TOP
 	@test -e ./tb/$(TOP)/$(TOP).sv || \
 		(	\
@@ -427,8 +432,8 @@ create_tb:
 # Create RTL
 ####################################################################################################
 
-.PHONY: create_rtl
-create_rtl:
+.PHONY: rtl
+rtl:
 	@echo "$(RTL)" > ___RTL
 	@test -e ./rtl/$(RTL).sv || \
 		(	\
@@ -450,9 +455,14 @@ update_doc_list: create_all_docs
 	@echo "## RTL" >> readme.md
 	@$(foreach file, $(shell find ./docs/rtl -name "*.md"), $(MAKE) get_rtl_doc_header FILE=$(file);)
 	@echo "" >> readme.md
+	@echo "## INCLUDE" >> readme.md
+	@$(foreach file, $(shell find ./docs/inc -name "*.md"), $(MAKE) get_inc_doc_header FILE=$(file);)
+	@echo "" >> readme.md
 
 .PHONY: clear_all_docs
 clear_all_docs:
+	@mkdir -p docs/rtl
+	@mkdir -p docs/inc
 	@rm -rf docs/rtl/*.md
 	@rm -rf docs/rtl/*_top.svg
 	@git submodule update --init ./sub/documenter
@@ -475,3 +485,87 @@ get_inc_doc_header:
 gen_doc:
 	@echo "Creating document for $(FILE)"
 	@$(PYTHON) ./sub/documenter/sv_documenter.py $(FILE) ./docs/rtl
+
+####################################################################################################
+# LINTING
+####################################################################################################
+
+.PHONY: lint
+lint:
+	@rm -rf ___LINT_ERROR
+	@$(eval list := $(shell find -name "*.v" -o -name "*.sv"))
+	@$(foreach file, $(list), verible-verilog-lint.exe $(file) >> ___LINT_ERROR 2>&1;)
+	@cat ___LINT_ERROR
+
+####################################################################################################
+# REPOSITORY MAINTAINANCE
+####################################################################################################
+
+.gitmodules:
+	@touch ./.gitmodules
+
+ci_run:
+	@echo ".PHONY: ci_vivado_run" > ci_run
+	@echo "ci_vivado_run:" >> ci_run
+	@echo "	@> ___CI_REPORT;" >> ci_run
+
+.PHONY: submodule_add_update
+submodule_add_update:
+	@mkdir -p sub
+	@cd sub; git submodule add $(URL) > /dev/null 2>&1 | : ;
+	@$(eval REPO_NAME = $(shell echo $(URL) | sed "s/.*\///g" | sed "s/\..*//g"))
+	@git submodule update --init -- ./sub/$(REPO_NAME) > /dev/null 2>&1
+	@cd ./sub/$(REPO_NAME); git checkout main > /dev/null 2>&1; git pull > /dev/null 2>&1
+
+.PHONY: add_ignore
+add_ignore:
+	@$(if $(filter $(EX),$(shell cat ./.gitignore)), : , echo "$(EX)" >> ./.gitignore)
+
+.PHONY: repo_update 
+repo_update: .gitmodules ci_run
+	@$(MAKE) submodule_add_update URL=https://github.com/foez-ahmed/sv-genesis.git
+	@$(MAKE) submodule_add_update URL=https://github.com/squared-studio/documenter.git
+	@cp ./sub/sv-genesis/Makefile ./Makefile
+	@mkdir -p ./.github/workflows
+	@cp -r ./sub/sv-genesis/*.yml ./.github/workflows/
+	@mkdir -p ./tb/__no_upload__
+	@mkdir -p ./rtl/__no_upload__
+	@mkdir -p ./intf/__no_upload__
+	@mkdir -p ./inc/__no_upload__
+	@mkdir -p ./inc/vip/
+	@cp ./sub/sv-genesis/tb_ess.sv ./inc/vip/
+	@cp ./sub/sv-genesis/no_upoload_readme.md ./inc/__no_upload__/readme.md
+	@cp ./sub/sv-genesis/no_upoload_readme.md ./intf/__no_upload__/readme.md
+	@cp ./sub/sv-genesis/no_upoload_readme.md ./rtl/__no_upload__/readme.md
+	@cp ./sub/sv-genesis/no_upoload_readme.md ./tb/__no_upload__/readme.md
+	@$(MAKE) add_ignore EX=___*
+	@$(MAKE) add_ignore EX=__no_upload__
+	@$(MAKE) add_ignore EX=.Xil/
+	@$(MAKE) add_ignore EX=*.jou
+	@$(MAKE) add_ignore EX=*.log
+	@$(MAKE) add_ignore EX=*.out
+	@$(MAKE) add_ignore EX=*.pb
+	@$(MAKE) add_ignore EX=*.swp
+	@$(MAKE) add_ignore EX=*.vcd
+	@$(MAKE) add_ignore EX=*.vvp
+	@$(MAKE) add_ignore EX=*.wdb
+	@$(MAKE) add_ignore EX=top.cache
+	@$(MAKE) add_ignore EX=top.hw
+	@$(MAKE) add_ignore EX=top.ip_user_files
+	@$(MAKE) add_ignore EX=top.runs
+	@$(MAKE) add_ignore EX=top.sim
+	@$(MAKE) add_ignore EX=top.tcl
+	@$(MAKE) add_ignore EX=top.xpr
+	@$(MAKE) add_ignore EX=vivado_pid*.str
+	@$(MAKE) add_ignore EX=xsim.dir
+	@$(MAKE) add_ignore EX=base_readme.md
+	@cp ./sub/sv-genesis/LICENSE ./
+	@cp ./sub/sv-genesis/rtl_model.sv ./
+	@cp ./sub/sv-genesis/tb_model.sv ./
+	@git add .
+	@git add -f ./inc/__no_upload__/readme.md
+	@git add -f ./intf/__no_upload__/readme.md
+	@git add -f ./rtl/__no_upload__/readme.md
+	@git add -f ./tb/__no_upload__/readme.md
+	@cp ./sub/sv-genesis/base_readme.md ./
+	@code base_readme.md
