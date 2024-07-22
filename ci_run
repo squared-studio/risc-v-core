@@ -1,4 +1,5 @@
 .PHONY: ci_vivado_run
 ci_vivado_run:
 	@> ___CI_REPORT;
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=default
 
