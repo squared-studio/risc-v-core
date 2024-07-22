@@ -14,6 +14,31 @@ module rv_g_regfile_tb;
   // bring in the testbench essentials functions and macros
   `include "vip/tb_ess.sv"
 
+  import "DPI-C" function void reset();
+  import "DPI-C" function void set_allow_forwarding(longint val);
+  import "DPI-C" function void set_wr_addr_i(longint val);
+  import "DPI-C" function void set_wr_data_i(longint val);
+  import "DPI-C" function void set_wr_en_i(longint val);
+  import "DPI-C" function void set_rd_addr_i(longint val);
+  import "DPI-C" function void set_rs1_addr_i(longint val);
+  import "DPI-C" function void set_rs2_addr_i(longint val);
+  import "DPI-C" function void set_rs3_addr_i(longint val);
+  import "DPI-C" function void set_req_i(longint val);
+  import "DPI-C" function longint get_allow_forwarding();
+  import "DPI-C" function longint get_wr_addr_i();
+  import "DPI-C" function longint get_wr_data_i();
+  import "DPI-C" function longint get_wr_en_i();
+  import "DPI-C" function longint get_rd_addr_i();
+  import "DPI-C" function longint get_rs1_addr_i();
+  import "DPI-C" function longint get_rs2_addr_i();
+  import "DPI-C" function longint get_rs3_addr_i();
+  import "DPI-C" function longint get_req_i();
+  import "DPI-C" function longint get_rs1_data_o();
+  import "DPI-C" function longint get_rs2_data_o();
+  import "DPI-C" function longint get_rs3_data_o();
+  import "DPI-C" function longint get_gnt_o();
+  import "DPI-C" function void clock_tick();
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-LOCALPARAMS
   //////////////////////////////////////////////////////////////////////////////////////////////////
