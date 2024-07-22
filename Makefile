@@ -8,18 +8,15 @@ ROOT        = $(shell pwd)
 TOP         = $(shell cat ___TOP)
 RTL         = $(shell cat ___RTL)
 TOP_DIR     = $(shell find $(realpath ./tb/) -wholename "*$(TOP)/$(TOP).sv" | sed "s/\/$(TOP).sv//g")
-TB_LIB      = $(shell find $(TOP_DIR) -name "*.v" -o -name "*.sv")
-DES_LIB     = $(shell find $(realpath ./rtl/) -name "*.v" -o -name "*.sv")
-DES_LIB    += $(shell find $(realpath ./sub/) -wholename "*/rtl/*" -type f -name "*.v" -o -name "*.sv")
+TB_LIB      = $(shell find $(TOP_DIR) -name "*.sv")
+DES_LIB     = $(shell find $(realpath ./rtl/) -name "*.sv")
+DES_LIB    += $(shell find $(realpath ./sub/) -wholename "*/rtl/*.sv" -type f)
 INTF_LIB    = $(shell find $(realpath ./intf/) -name "*.sv")
-INTF_LIB   += $(shell find $(realpath ./intf/) -wholename "*/rtl/*" -type f -name "*.sv")
+INTF_LIB   += $(shell find $(realpath ./sub/) -wholename "*/intf/*.sv" -type f)
 INC_DIR     = $(shell find $(realpath ./) -path "*/inc" | sed "s/^/-i /g" | sed "s/.*\/docs\/.*//g")
 RTL_FILE    = $(shell find $(realpath ./rtl/) -name "$(RTL).sv")
 CONFIG      = default
 CONFIG_PATH = $(TOP_DIR)/config/$(CONFIG)
-
-PRINT:
-	@echo "${INC_DIR}"
 
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___CI_REPORT_TEMP")
 CLEAN_TARGETS += $(shell find $(realpath ./) -name "___flist")
@@ -455,7 +452,8 @@ clear_all_docs:
 
 .PHONY: create_all_docs
 create_all_docs: clear_all_docs
-	@$(foreach file, $(DES_LIB), $(if $(shell echo $(file) | sed "s/.*__no_upload__.*//g"), $(MAKE) gen_doc FILE=$(file), echo "");)
+	@$(foreach file, $(shell find $(realpath ./rtl/) -type f -wholename "*/rtl/*.sv"), \
+		$(if $(shell echo $(file) | sed "s/.*__no_upload__.*//g"), $(MAKE) gen_doc FILE=$(file), echo "");)
 
 .PHONY: get_rtl_doc_header
 get_rtl_doc_header:
@@ -515,14 +513,17 @@ submodule_add_update:
 	@git submodule update --init -- ./sub/$(REPO_NAME) > /dev/null 2>&1
 	@cd ./sub/$(REPO_NAME); git checkout main > /dev/null 2>&1; git pull > /dev/null 2>&1
 
+.PHONY:base_repo_init
+base_repo_init:
+	@$(MAKE) submodule_add_update URL=https://github.com/foez-ahmed/sv-genesis.git
+	@$(MAKE) submodule_add_update URL=https://github.com/squared-studio/documenter.git
+
 .PHONY: add_ignore
 add_ignore:
 	@$(if $(filter $(EX),$(shell cat ./.gitignore)), : , echo "$(EX)" >> ./.gitignore)
 
 .PHONY: repo_update 
-repo_update: .gitmodules ci_run rtl_model.sv tb_model.sv LICENSE readme_base.md
-	@$(MAKE) submodule_add_update URL=https://github.com/foez-ahmed/sv-genesis.git
-	@$(MAKE) submodule_add_update URL=https://github.com/squared-studio/documenter.git
+repo_update: .gitmodules ci_run base_repo_init rtl_model.sv tb_model.sv LICENSE readme_base.md
 	@cp ./sub/sv-genesis/Makefile ./Makefile
 	@mkdir -p ./.github/workflows
 	@cp -r ./sub/sv-genesis/*.yml ./.github/workflows/
@@ -556,7 +557,6 @@ repo_update: .gitmodules ci_run rtl_model.sv tb_model.sv LICENSE readme_base.md
 	@$(MAKE) add_ignore EX=top.xpr
 	@$(MAKE) add_ignore EX=vivado_pid*.str
 	@$(MAKE) add_ignore EX=xsim.dir
-	@$(MAKE) add_ignore EX=base_readme.md
 	@git add .
 	@git add -f ./inc/__no_upload__/readme.md
 	@git add -f ./intf/__no_upload__/readme.md
