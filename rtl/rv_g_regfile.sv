@@ -3,7 +3,7 @@ Write a markdown documentation for this systemverilog module:
 Author : Foez Ahmed (foez.official@gmail.com)
 */
 
-module reg_file_g #(
+module rv_g_regfile #(
     parameter int XLEN = 64,  // Length of Integer Registers
     parameter int FLEN = 32,  // Length of Floating Point Registers
     localparam int MaxLen = ((FLEN > XLEN) ? FLEN : XLEN),  // max(FLEN, XLEN)
@@ -75,12 +75,12 @@ module reg_file_g #(
   //-RTLS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  reg_file #(
+  regfile #(
       .NUM_RS   (2),
       .ZERO_REG (1),
       .NUM_REG  (32),
       .REG_WIDTH(XLEN)
-  ) u_x_reg_file (
+  ) u_x_regfile (
       .clk_i    (clk_i),
       .arst_ni  (arst_ni),
       .rd_addr_i(wr_addr_i[4:0]),
@@ -90,12 +90,12 @@ module reg_file_g #(
       .rs_data_o(x_rs)
   );
 
-  reg_file #(
+  regfile #(
       .NUM_RS   (3),
       .ZERO_REG (0),
       .NUM_REG  (32),
       .REG_WIDTH(FLEN)
-  ) u_f_reg_file (
+  ) u_f_regfile (
       .clk_i    (clk_i),
       .arst_ni  (arst_ni),
       .rd_addr_i(wr_addr_i[4:0]),
