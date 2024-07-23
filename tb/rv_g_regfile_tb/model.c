@@ -1,5 +1,8 @@
+#include "stdio.h"
 #include "stdint.h"
 
+uint64_t XLEN;
+uint64_t FLEN;
 uint64_t allow_forwarding;
 
 uint64_t wr_addr_i;
@@ -19,7 +22,7 @@ uint64_t mem [64];
 
 int lock [64];
 
-void reset () {
+void model_reset () {
   wr_addr_i  = 0;
   wr_data_i  = 0;
   wr_en_i    = 0;
@@ -38,9 +41,19 @@ void reset () {
   }
 }
 
+void set_XLEN (uint64_t val) {
+  if (val == 32 || val == 64) XLEN = val;
+  else printf("XLEN:%0d is not supported..!\n", val);
+}
+
+void set_FLEN (uint64_t val) {
+  if (val == 32 || val == 64) FLEN = val;
+  else printf("FLEN:%0d is not supported..!\n", val);
+}
+
 void set_allow_forwarding (uint64_t val) {
   if (val) allow_forwarding = 1;
-  else allow_forwarding = 1;
+  else allow_forwarding = 0;
 }
 
 void set_wr_addr_i (uint64_t val) {
@@ -53,7 +66,7 @@ void set_wr_data_i (uint64_t val) {
 
 void set_wr_en_i (uint64_t val) {
   if (val) wr_en_i = 1;
-  else wr_en_i = 1;
+  else wr_en_i = 0;
 }
 
 void set_rd_addr_i (uint64_t val) {
@@ -74,7 +87,15 @@ void set_rs3_addr_i (uint64_t val) {
 
 void set_req_i (uint64_t val) {
   if (val) req_i = 1;
-  else req_i = 1;
+  else req_i = 0;
+}
+
+uint64_t get_XLEN (uint64_t val) {
+  return XLEN;
+}
+
+uint64_t get_FLEN (uint64_t val) {
+  return FLEN;
 }
 
 uint64_t get_allow_forwarding () {
@@ -159,14 +180,16 @@ void clock_tick () {
       if ((wr_en_i == 1) && (rs3_addr_i == wr_addr_i)) allow_rs3 = 1;
       else allow_rs3 = 0;
     } else {
-      rs3_data_o = mem[rs3_addr_i];
+      if (rs3_addr_i < 32) rs3_data_o = 0;
+      else rs3_data_o = mem[rs3_addr_i];
       allow_rs3 = 1;
     }
 
   } else {
     rs1_data_o = mem[rs1_addr_i];
     rs2_data_o = mem[rs2_addr_i];
-    rs3_data_o = mem[rs3_addr_i];
+    if (rs3_addr_i < 32) rs3_data_o = 0;
+    else rs3_data_o = mem[rs3_addr_i];
     allow_rs1  = !lock[rs1_addr_i];
     allow_rs2  = !lock[rs2_addr_i];
     allow_rs3  = !lock[rs3_addr_i];
@@ -180,12 +203,22 @@ void clock_tick () {
   gnt_o = req_i && allow_rd && allow_rs1 && allow_rs2 && allow_rs3;
 
   if (wr_en_i) {
-    mem[wr_addr_i] = wr_data_i;
+    if(wr_addr_i < 32) {
+      if (XLEN == 32) mem[wr_addr_i] = 0xFFFFFFFF & wr_data_i;
+      else            mem[wr_addr_i] = wr_data_i;
+    } else {
+      if (FLEN == 32) mem[wr_addr_i] = 0xFFFFFFFF & wr_data_i;
+      else            mem[wr_addr_i] = wr_data_i;
+    }
     lock[wr_addr_i] = 0;
   }
 
-  if ((req_i == 1) && (gnt_o==1)) {
-    lock[rd_addr_i] = 1;
+  if ((req_i == 1) && (gnt_o == 1)) {
+    lock[rd_addr_i] = (rd_addr_i != 0);
   }
 
+}
+
+uint64_t get_lock (int index) {
+  return lock[index];
 }

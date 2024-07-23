@@ -1,5 +1,11 @@
 .PHONY: ci_vivado_run
 ci_vivado_run:
 	@> ___CI_REPORT;
-	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=default
-
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C32320
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C32321
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C32640
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C32641
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C64320
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C64321
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C64640
+	@$(MAKE) vivado TOP=rv_g_regfile_tb CONFIG=C64641

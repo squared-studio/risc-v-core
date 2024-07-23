@@ -109,12 +109,12 @@ module rv_g_regfile #(
   //-SEQUENTIALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_ff @(posedge clk_i or negedge arst_ni) begin
+  always @(posedge clk_i or negedge arst_ni) begin
     if (~arst_ni) begin
       foreach (lock[i]) lock[i] <= '0;
     end else begin
       if (wr_en_i) lock[wr_addr_i] <= '0;
-      if (req_i & gnt_o) lock[rd_addr_i] <= |rd_addr_i;
+      if (req_i & gnt_o) lock[rd_addr_i] <= (rd_addr_i != '0);
     end
   end
 
