@@ -54,16 +54,22 @@ module rv_g_regfile #(
 
   assign rd_ready = lock[rd_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rd_addr_i)) : '1;
   if (ALLOW_FORWARDING) begin : g_forward_paths
-    assign rs1_ready  = lock[rs1_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs1_addr_i)) : '1;
-    assign rs2_ready  = lock[rs2_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs2_addr_i)) : '1;
-    assign rs3_ready  = lock[rs3_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs3_addr_i)) : '1;
+    // COMPUTE RS READYs
+    assign rs1_ready = lock[rs1_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs1_addr_i)) : '1;
+    assign rs2_ready = lock[rs2_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs2_addr_i)) : '1;
+    assign rs3_ready =
+      rs3_addr_i[5] ? (lock[rs3_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs3_addr_i)) : '1) : '1;
+    // COMPUTE RS DATAs
     assign rs1_data_o = lock[rs1_addr_i] ? wr_data_i : (rs1_addr_i[5] ? f_rs[0] : x_rs[0]);
     assign rs2_data_o = lock[rs2_addr_i] ? wr_data_i : (rs2_addr_i[5] ? f_rs[1] : x_rs[1]);
-    assign rs3_data_o = lock[rs3_addr_i] ? wr_data_i : (rs3_addr_i[5] ? f_rs[2] : '0);
+    assign rs3_data_o =
+      rs3_addr_i[5] ? (lock[rs3_addr_i] ? wr_data_i : (rs3_addr_i[5] ? f_rs[2] : '0)) : '0;
   end else begin : g_no_forward
+    // COMPUTE RS READYs
     assign rs1_ready  = ~lock[rs1_addr_i];
     assign rs2_ready  = ~lock[rs2_addr_i];
-    assign rs3_ready  = ~lock[rs3_addr_i];
+    assign rs3_ready  = rs3_addr_i[5] ? ~lock[rs3_addr_i] : '1;
+    // COMPUTE RS DATAs
     assign rs1_data_o = rs1_addr_i[5] ? f_rs[0] : x_rs[0];
     assign rs2_data_o = rs2_addr_i[5] ? f_rs[1] : x_rs[1];
     assign rs3_data_o = rs3_addr_i[5] ? f_rs[2] : '0;

@@ -180,19 +180,29 @@ void clock_tick () {
       if ((wr_en_i == 1) && (rs3_addr_i == wr_addr_i)) allow_rs3 = 1;
       else allow_rs3 = 0;
     } else {
-      if (rs3_addr_i < 32) rs3_data_o = 0;
-      else rs3_data_o = mem[rs3_addr_i];
+      rs3_data_o = mem[rs3_addr_i];
       allow_rs3 = 1;
     }
+
+    if (rs3_addr_i < 32) {
+      rs3_data_o = 0;
+      allow_rs3 = 1;
+    }
+
 
   } else {
     rs1_data_o = mem[rs1_addr_i];
     rs2_data_o = mem[rs2_addr_i];
-    if (rs3_addr_i < 32) rs3_data_o = 0;
-    else rs3_data_o = mem[rs3_addr_i];
-    allow_rs1  = !lock[rs1_addr_i];
+    if (rs3_addr_i < 32) {
+      rs3_data_o = 0;
+      allow_rs3 = 1;
+    }
+    else {
+      rs3_data_o = mem[rs3_addr_i];
+      allow_rs3  = !lock[rs3_addr_i];
+    }
     allow_rs2  = !lock[rs2_addr_i];
-    allow_rs3  = !lock[rs3_addr_i];
+    allow_rs1  = !lock[rs1_addr_i];
   }
 
   if (lock[rd_addr_i]) {
@@ -210,6 +220,7 @@ void clock_tick () {
       if (FLEN == 32) mem[wr_addr_i] = 0xFFFFFFFF & wr_data_i;
       else            mem[wr_addr_i] = wr_data_i;
     }
+    if (wr_addr_i == 0) mem[0] = 0;
     lock[wr_addr_i] = 0;
   }
 

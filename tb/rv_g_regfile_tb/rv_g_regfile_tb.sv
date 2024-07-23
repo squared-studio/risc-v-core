@@ -81,9 +81,9 @@ module rv_g_regfile_tb;
   localparam int FLEN = 64;
   localparam bit AllowForwarding = 1;
 `else
-  localparam int XLEN = 32;
-  localparam int FLEN = 32;
-  localparam bit AllowForwarding = 0;
+  localparam int XLEN = 64;
+  localparam int FLEN = 64;
+  localparam bit AllowForwarding = 1;
 `endif
 
   localparam int MaxLen = (XLEN > FLEN) ? XLEN : FLEN;
@@ -198,7 +198,7 @@ module rv_g_regfile_tb;
   task static start_checker();
     fork
       forever begin
-        @(negedge clk_i);
+        @(posedge clk_i);
         set_wr_addr_i(wr_addr_i);
         set_wr_data_i(wr_data_i);
         set_wr_en_i(wr_en_i);
@@ -235,7 +235,7 @@ module rv_g_regfile_tb;
     start_driver();
     start_checker();
 
-    repeat (100) @(posedge clk_i);
+    repeat (1000) @(posedge clk_i);
 
     result_print(rs1_data_o_ok, "rs1_data_o");
     result_print(rs2_data_o_ok, "rs2_data_o");
