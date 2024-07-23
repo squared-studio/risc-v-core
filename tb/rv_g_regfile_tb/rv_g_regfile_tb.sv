@@ -235,7 +235,7 @@ module rv_g_regfile_tb;
     start_driver();
     start_checker();
 
-    repeat (1000) @(posedge clk_i);
+    repeat (10000) @(posedge clk_i);
 
     result_print(rs1_data_o_ok, "rs1_data_o");
     result_print(rs2_data_o_ok, "rs2_data_o");
