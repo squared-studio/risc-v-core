@@ -165,16 +165,24 @@ list_modules: clean
 .PHONY: locate_files
 locate_files: list_modules
 	@$(eval _TMP := )
-	@$(foreach word,$(shell cat ___list), 		\
-		$(if $(filter $(word),$(_TMP)),					\
-			echo "", 															\
-			$(eval _TMP += $(word))								\
-				find -name "$(word).sv" >> ___flist	\
-		);																			\
+	@$(foreach word,$(shell cat ___list), 		                                  \
+		$(if $(filter $(word),$(_TMP)),					                                  \
+			: ,                                                                     \
+			$(eval _TMP += $(word))								                                  \
+				find -name "$(word).sv" | sed "s/.*\/sub\/.*\/sub\/.*//g" >> ___flist	\
+		);																			                                  \
 	)
 
+.PHONY: flist_blank_fix
+flist_blank_fix:
+	@$(eval temp := $(shell cat ___flist))
+	@rm -rf ___flist
+	@$(foreach file, $(temp), echo "$(file)" >> ___flist;)
+
 .PHONY: flist
-flist: locate_files
+flist: locate_files flist_blank_fix
+	@echo ""
+	@cat ___flist
 	@cat ___flist | $(CLIP)
 	@$(MAKE) clean
 	@echo -e "\033[2;35m$(RTL) flist copied to clipboard\033[0m"
