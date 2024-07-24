@@ -355,7 +355,8 @@ package rv_g_pkg;
     i_AMOMAX_D  = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, AMOMAX_D},
     i_AMOMINU_D = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, AMOMINU_D},
     i_AMOMAXU_D = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, AMOMAXU_D},
-    i_FLW       = {IIMM, ____, ____, ____, ____, ____, ____, ____, FLW},        // TODO
+
+    i_FLW       = {IIMM, ____, ____, ____, KEEP, ____, KEEP, ____, FLW},        // TODO
     i_FSW       = {SIMM, ____, ____, ____, ____, ____, ____, ____, FSW},        // TODO
     i_FMADD_S   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMADD_S},    // TODO
     i_FMSUB_S   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMSUB_S},    // TODO
@@ -385,7 +386,8 @@ package rv_g_pkg;
     i_FCVT_S_LU = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_S_LU},  // TODO
     i_FMV_X_W   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMV_X_W},    // TODO
     i_FMV_W_X   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMV_W_X},    // TODO
-    i_FLD       = {IIMM, ____, ____, ____, ____, ____, ____, ____, FLD},        // TODO
+
+    i_FLD       = {IIMM, ____, ____, ____, KEEP, ____, KEEP, ____, FLD},        // TODO
     i_FSD       = {SIMM, ____, ____, ____, ____, ____, ____, ____, FSD},        // TODO
     i_FMADD_D   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMADD_D},    // TODO
     i_FMSUB_D   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMSUB_D},    // TODO
@@ -417,7 +419,8 @@ package rv_g_pkg;
     i_FMV_D_X   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMV_D_X},    // TODO
     i_FCVT_S_D  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_S_D},   // TODO
     i_FCVT_D_S  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_D_S},   // TODO
-    i_FLQ       = {IIMM, ____, ____, ____, ____, ____, ____, ____, FLQ},        // TODO
+
+    i_FLQ       = {IIMM, ____, ____, KEEP, ____, KEEP, ____, ____, FLQ},        // TODO
     i_FSQ       = {SIMM, ____, ____, ____, ____, ____, ____, ____, FSQ},        // TODO
     i_FMADD_Q   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMADD_Q},    // TODO
     i_FMSUB_Q   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMSUB_Q},    // TODO
@@ -449,7 +452,8 @@ package rv_g_pkg;
     i_FCVT_Q_S  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_Q_S},   // TODO
     i_FCVT_D_Q  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_D_Q},   // TODO
     i_FCVT_Q_D  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_Q_D},   // TODO
-    i_FLH       = {IIMM, ____, ____, ____, ____, ____, ____, ____, FLH},        // TODO
+
+    i_FLH       = {IIMM, ____, ____, ____, KEEP, ____, KEEP, ____, FLH},        // TODO
     i_FSH       = {SIMM, ____, ____, ____, ____, ____, ____, ____, FSH},        // TODO
     i_FMADD_H   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMADD_H},    // TODO
     i_FMSUB_H   = {NONE, ____, ____, ____, ____, ____, ____, ____, FMSUB_H},    // TODO
@@ -485,6 +489,7 @@ package rv_g_pkg;
     i_FCVT_H_D  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_H_D},   // TODO
     i_FCVT_Q_H  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_Q_H},   // TODO
     i_FCVT_H_Q  = {NONE, ____, ____, ____, ____, ____, ____, ____, FCVT_H_Q},   // TODO
+
     i_WRS_NTO   = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, WRS_NTO},
     i_WRS_STO   = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, WRS_STO},
     i_INVALID_H = {NONE, ____, ____, ____, ____, ____, ____, ____, INVALID_H}
