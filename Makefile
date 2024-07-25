@@ -456,7 +456,7 @@ clear_all_docs:
 	@mkdir -p docs/inc
 	@rm -rf docs/rtl/*.md
 	@rm -rf docs/rtl/*_top.svg
-	@git submodule update --init ./sub/documenter
+	@git submodule update --init --depth 1 -- ./sub/documenter
 
 .PHONY: create_all_docs
 create_all_docs: clear_all_docs
@@ -516,7 +516,7 @@ readme_base.md:
 .PHONY: submodule_add_update
 submodule_add_update:
 	@mkdir -p sub
-	@cd sub; git submodule add $(URL) > /dev/null 2>&1 | : ;
+	@cd sub; git submodule add --depth 1 $(URL) > /dev/null 2>&1 | : ;
 	@$(eval REPO_NAME = $(shell echo $(URL) | sed "s/.*\///g" | sed "s/\..*//g"))
 	@git submodule update --init -- ./sub/$(REPO_NAME) > /dev/null 2>&1
 	@cd ./sub/$(REPO_NAME); git checkout main > /dev/null 2>&1; git pull > /dev/null 2>&1

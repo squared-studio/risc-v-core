@@ -10,3 +10,6 @@
 [submodule "sub/sv-common"]
 	path = sub/sv-common
 	url = https://github.com/squared-studio/sv-common.git
+[submodule "sub/RISC-V-TESTS"]
+	path = sub/RISC-V-TESTS
+	url = https://github.com/squared-studio/RISC-V-TESTS
