@@ -1,0 +1,15 @@
+[submodule "sub/sv-genesis"]
+	path = sub/sv-genesis
+	url = https://github.com/squared-studio/sv-genesis.git
+[submodule "sub/documenter"]
+	path = sub/documenter
+	url = https://github.com/squared-studio/documenter.git
+[submodule "sub/common"]
+	path = sub/common
+	url = https://github.com/squared-studio/common.git
+[submodule "sub/risc-v-model"]
+	path = sub/risc-v-model
+	url = https://github.com/squared-studio/risc-v-model.git
+[submodule "sub/risc-v-tests"]
+	path = sub/risc-v-tests
+	url = https://github.com/squared-studio/risc-v-tests.git
