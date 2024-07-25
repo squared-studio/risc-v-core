@@ -7,3 +7,6 @@
 [submodule "sub/RISC-V-MODEL"]
 	path = sub/RISC-V-MODEL
 	url = https://github.com/squared-studio/RISC-V-MODEL.git
+[submodule "sub/sv-common"]
+	path = sub/sv-common
+	url = https://github.com/squared-studio/sv-common.git
