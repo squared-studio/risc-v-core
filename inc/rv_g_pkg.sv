@@ -23,7 +23,6 @@ package rv_g_pkg;
   } imm_src_t;
 
   typedef enum logic [9:0] {
-    INVALID,
     LUI,
     AUIPC,
     JAL,
@@ -251,13 +250,13 @@ package rv_g_pkg;
     FCVT_Q_H,
     FCVT_H_Q,
     WRS_NTO,
-    WRS_STO
+    WRS_STO,
+    INVALID
   } func_t;
 
   typedef enum logic [19:0] {
     //             19:17 16    15    14    13    12    11    10    9:0
     //             IMM_  frs3  frs2  frs1  frd_  xrs2  xrs1  xrd_, Function
-    i_INVALID   = {NONE, ____, ____, ____, ____, ____, ____, ____, INVALID},
     i_LUI       = {UIMM, ____, ____, ____, ____, ____, ____, KEEP, LUI},
     i_AUIPC     = {UIMM, ____, ____, ____, ____, ____, ____, KEEP, AUIPC},
     i_JAL       = {JIMM, ____, ____, ____, ____, ____, ____, KEEP, JAL},
@@ -485,7 +484,8 @@ package rv_g_pkg;
     i_FCVT_Q_H  = {NONE, ____, ____, KEEP, KEEP, ____, ____, ____, FCVT_Q_H},
     i_FCVT_H_Q  = {NONE, ____, ____, KEEP, KEEP, ____, ____, ____, FCVT_H_Q},
     i_WRS_NTO   = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, WRS_NTO},
-    i_WRS_STO   = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, WRS_STO}
+    i_WRS_STO   = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, WRS_STO},
+    i_INVALID   = {NONE, ____, ____, ____, ____, ____, ____, ____, INVALID}
     //             IMM_  frs3  frs2  frs1  frd_  xrs2  xrs1  xrd_, Function
     //             19:17 16    15    14    13    12    11    10    9:0
   } intr_func_t;

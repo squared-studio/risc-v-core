@@ -19,8 +19,7 @@ The repository is structured into several directories, each with a distinct role
 To know how to use different commands on this repo, type `make help` or just `make` at the repo root and further details with be printed on the terminal.
 
 ## RTL
-[decoder_reduction_or ](./docs/rtl/decoder_reduction_or.md)<br>
-[instruction_decoder ](./docs/rtl/instruction_decoder.md)<br>
+[rv_g_core ](./docs/rtl/rv_g_core.md)<br>
 [rv_g_instdec ](./docs/rtl/rv_g_instdec.md)<br>
 [rv_g_regfile ](./docs/rtl/rv_g_regfile.md)<br>
 
