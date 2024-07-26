@@ -1,9 +1,9 @@
-# reg_file_g (module)
+# rv_g_regfile (module)
 
 ### Author : Foez Ahmed (foez.official@gmail.com)
 
 ## TOP IO
-<img src="./reg_file_g_top.svg">
+<img src="./rv_g_regfile_top.svg">
 
 ## Description
 
@@ -14,6 +14,7 @@ Write a markdown documentation for this systemverilog module:
 |-|-|-|-|-|
 |XLEN|int||64|Length of Integer Registers|
 |FLEN|int||32|Length of Floating Point Registers|
+|MaxLen|int||((FLEN > XLEN) ? FLEN : XLEN)|max(FLEN, XLEN)|
 |ALLOW_FORWARDING|bit||1|Allow forwarding write data|
 
 ## Ports

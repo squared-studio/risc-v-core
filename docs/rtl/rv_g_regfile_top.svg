@@ -30,6 +30,6 @@
 <text x="680" y="585" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">rs3_data_o</text>
 <polygon points="685,645 705,645 705,635 725,635 735,645 725,655 705,655 705,645 685,645"/>
 <text x="680" y="635" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">gnt_o</text>
-<text x="370" y="700" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">reg_file_g</text>
+<text x="370" y="700" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">rv_g_regfile</text>
 </g>
 </svg>

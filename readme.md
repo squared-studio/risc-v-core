@@ -21,7 +21,8 @@ To know how to use different commands on this repo, type `make help` or just `ma
 ## RTL
 [decoder_reduction_or ](./docs/rtl/decoder_reduction_or.md)<br>
 [instruction_decoder ](./docs/rtl/instruction_decoder.md)<br>
-[reg_file_g ](./docs/rtl/reg_file_g.md)<br>
+[rv_g_instdec ](./docs/rtl/rv_g_instdec.md)<br>
+[rv_g_regfile ](./docs/rtl/rv_g_regfile.md)<br>
 
 ## INCLUDE
 
