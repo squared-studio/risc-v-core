@@ -14,6 +14,9 @@ module rv_g_instdec_tb;
   // bring in the testbench essentials functions and macros
   `include "vip/tb_ess.sv"
 
+  import "DPI-C" function void set_code(int unsigned code__);
+  import "DPI-C" function string get_func();
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-LOCALPARAMS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +79,8 @@ module rv_g_instdec_tb;
     apply_reset();
     start_clk_i();
 
+    set_code(0);
+    $display("%s", get_func());
     @(posedge clk_i);
     result_print(1, "This is a PASS");
     @(posedge clk_i);

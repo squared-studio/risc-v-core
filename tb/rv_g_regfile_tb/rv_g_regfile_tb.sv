@@ -188,12 +188,12 @@ module rv_g_regfile_tb;
     join_none
   endtask
 
-  `define CHECK(__SIGNAL__)                                                                        \
-    if (get_``__SIGNAL__``() != ``__SIGNAL__``) begin                                              \
-      $warning(`"\n``__SIGNAL__`` - RTL:0x%0h MDL:0x%0h req_i:0x%0h\n`",                           \
-        ``__SIGNAL__``, get_``__SIGNAL__``(), get_req_i());                                        \
-      ``__SIGNAL__``_ok = '0;                                                                      \
-    end                                                                                            \
+  `define CHECK(__SIGNAL__)                                              \
+    if (get_``__SIGNAL__``() != ``__SIGNAL__``) begin                    \
+      $warning(`"\n``__SIGNAL__`` - RTL:0x%0h MDL:0x%0h req_i:0x%0h\n`", \
+        ``__SIGNAL__``, get_``__SIGNAL__``(), get_req_i());              \
+      ``__SIGNAL__``_ok = '0;                                            \
+    end                                                                  \
 
   task static start_checker();
     fork
