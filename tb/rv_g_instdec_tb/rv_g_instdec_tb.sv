@@ -13,10 +13,25 @@ module rv_g_instdec_tb;
 
   // bring in the testbench essentials functions and macros
   `include "vip/tb_ess.sv"
+  `include "rv_g_pkg.sv"
 
+  import rv_g_pkg::*;
   import "DPI-C" function void set_code(int unsigned code__);
+  import "DPI-C" function int get_code ();
+  import "DPI-C" function int get_rd ();
+  import "DPI-C" function int get_rs1 ();
+  import "DPI-C" function int get_rs2 ();
+  import "DPI-C" function int get_rs3 ();
+  import "DPI-C" function int get_imm ();
+  import "DPI-C" function int get_shamt ();
+  import "DPI-C" function int get_succ ();
+  import "DPI-C" function int get_pred ();
+  import "DPI-C" function int get_fm ();
+  import "DPI-C" function int get_csr ();
+  import "DPI-C" function int get_rl ();
+  import "DPI-C" function int get_aq ();
+  import "DPI-C" function int get_rm ();
   import "DPI-C" function string get_func();
-
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-LOCALPARAMS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +43,8 @@ module rv_g_instdec_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-SIGNALS
   //////////////////////////////////////////////////////////////////////////////////////////////////
+  logic [31:0] code_i;
+  rv_g_pkg::decoded_instr_t cmd_o;
 
   // generates static task start_clk_i with tHigh:4ns tLow:6ns
   `CREATE_CLK(clk_i, 4ns, 6ns)
@@ -53,7 +70,12 @@ module rv_g_instdec_tb;
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-RTLS
   //////////////////////////////////////////////////////////////////////////////////////////////////
-
+  rv_g_instdec #(
+    rv_g_pkg::decoded_instr_t
+  ) u_rv_g_instdec(
+    .code_i(code_i),
+    .cmd_o(cmd_o)
+  );
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-METHODS
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,6 +87,29 @@ module rv_g_instdec_tb;
     arst_ni <= 1;
     #100ns;
   endtask
+
+  task static start_driver();
+  fork
+    forever begin
+      @(posedge clk_i);
+      code_i  <= {$urandom};
+    end
+  join_none
+endtask
+
+task static start_checker();
+fork
+  forever begin
+    @(posedge clk_i);
+    set_code(wr_addr_i);
+    repeat (50) @(posedge clk);
+    // `CHECK(rs1_data_o)
+    // `CHECK(rs2_data_o)
+    // `CHECK(rs3_data_o)
+    // `CHECK(gnt_o)
+  end
+join_none
+endtask
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   //-SEQUENTIALS
