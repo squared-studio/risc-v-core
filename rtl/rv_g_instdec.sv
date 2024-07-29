@@ -363,9 +363,6 @@ module rv_g_instdec
   assign cmd_o.aq    = code_i[26:26];
   assign cmd_o.rm    = code_i[14:12];
   assign cmd_o.shamt = code_i[25:20];
-  assign cmd_o.succ  = code_i[23:20];
-  assign cmd_o.pred  = code_i[27:24];
-  assign cmd_o.fm    = code_i[31:28];
   assign cmd_o.csr   = code_i[31:20];
 
 endmodule

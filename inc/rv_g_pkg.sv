@@ -496,14 +496,11 @@ package rv_g_pkg;
     logic [5:0]  rs1;
     logic [5:0]  rs2;
     logic [5:0]  rs3;
-    logic [31:0] imm;
+    logic [31:0] imm; // imm:32, {fm:4,pred:4,succ:4}
     logic        rl;
     logic        aq;
     logic [2:0]  rm;
     logic [5:0]  shamt;
-    logic [3:0]  succ;
-    logic [3:0]  pred;
-    logic [3:0]  fm;
     logic [11:0] csr;
   } decoded_instr_t;
 
