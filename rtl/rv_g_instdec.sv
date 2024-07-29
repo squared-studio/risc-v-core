@@ -133,7 +133,7 @@ module rv_g_instdec
   assign intr_func   = ((code_i & 32'hFE00707F) == 32'h0000103B) ? i_SLLW : '1;
   assign intr_func   = ((code_i & 32'hFE00707F) == 32'h0000503B) ? i_SRLW : '1;
   assign intr_func   = ((code_i & 32'hFE00707F) == 32'h4000503B) ? i_SRAW : '1;
-  assign intr_func   = ((code_i & 32'h0000707F) == 32'h0000100F) ? i_FENC_I : '1;
+  assign intr_func   = ((code_i & 32'h0000707F) == 32'h0000100F) ? i_FENCE_I : '1;
   assign intr_func   = ((code_i & 32'h0000707F) == 32'h00001073) ? i_CSRRW : '1;
   assign intr_func   = ((code_i & 32'h0000707F) == 32'h00002073) ? i_CSRRS : '1;
   assign intr_func   = ((code_i & 32'h0000707F) == 32'h00003073) ? i_CSRRC : '1;
