@@ -37,6 +37,7 @@ module rv_g_instdec
   logic [31:0] simm;
   logic [31:0] uimm;
   logic [31:0] cimm;
+  logic [31:0] aimm;
 
   wand  [19:0] intr_func;
 
@@ -73,8 +74,12 @@ module rv_g_instdec
   assign uimm[11:0]  = '0;
   assign uimm[31:12] = code_i[31:12];
 
-  assign cimm[4:0]   = code_i[19:15];
-  assign cimm[31:5]  = '0;
+  assign cimm[11:0]  = code_i[31:20];
+  assign cimm[16:12] = code_i[19:15];
+  assign cimm[31:17] = '0;
+
+  assign aimm[5:0]   = code_i[25:20];
+  assign aimm[31:6]  = '0;
 
   assign intr_func   = ((code_i & 32'h0000007F) == 32'h00000037) ? i_LUI : '1;
   assign intr_func   = ((code_i & 32'h0000007F) == 32'h00000017) ? i_AUIPC : '1;
@@ -356,13 +361,12 @@ module rv_g_instdec
       SIMM: cmd_o.imm = simm;
       UIMM: cmd_o.imm = uimm;
       CIMM: cmd_o.imm = cimm;
+      AIMM: cmd_o.imm = cimm;
     endcase
   end
 
-  assign cmd_o.rl    = code_i[25:25];
-  assign cmd_o.aq    = code_i[26:26];
-  assign cmd_o.rm    = code_i[14:12];
-  assign cmd_o.shamt = code_i[25:20];
-  assign cmd_o.csr   = code_i[31:20];
+  assign cmd_o.rl  = code_i[25:25];
+  assign cmd_o.aq  = code_i[26:26];
+  assign cmd_o.rm  = code_i[14:12];
 
 endmodule
