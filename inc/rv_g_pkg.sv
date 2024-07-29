@@ -19,7 +19,8 @@ package rv_g_pkg;
     JIMM,  // JTYPE INSTRUCTION IMMEDIATE
     SIMM,  // RTYPE INSTRUCTION IMMEDIATE
     UIMM,  // UTYPE INSTRUCTION IMMEDIATE
-    CIMM   // CSR INSTRUCTION IMMEDIATE
+    CIMM,  // CSR INSTRUCTION IMMEDIATE
+    AIMM   // SHIFT AMOUNT
   } imm_src_t;
 
   typedef enum logic [9:0] {
@@ -281,9 +282,9 @@ package rv_g_pkg;
     i_XORI      = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, XORI},
     i_ORI       = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, ORI},
     i_ANDI      = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, ANDI},
-    i_SLLI      = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SLLI},
-    i_SRLI      = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRLI},
-    i_SRAI      = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRAI},
+    i_SLLI      = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SLLI},
+    i_SRLI      = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRLI},
+    i_SRAI      = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRAI},
     i_ADD       = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, ADD},
     i_SUB       = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, SUB},
     i_SLL       = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, SLL},
@@ -303,9 +304,9 @@ package rv_g_pkg;
     i_LD        = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, LD},
     i_SD        = {SIMM, ____, ____, ____, ____, KEEP, KEEP, ____, SD},
     i_ADDIW     = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, ADDIW},
-    i_SLLIW     = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SLLIW},
-    i_SRLIW     = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRLIW},
-    i_SRAIW     = {IIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRAIW},
+    i_SLLIW     = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SLLIW},
+    i_SRLIW     = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRLIW},
+    i_SRAIW     = {AIMM, ____, ____, ____, ____, ____, KEEP, KEEP, SRAIW},
     i_ADDW      = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, ADDW},
     i_SUBW      = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, SUBW},
     i_SLLW      = {NONE, ____, ____, ____, ____, KEEP, KEEP, KEEP, SLLW},
@@ -496,12 +497,10 @@ package rv_g_pkg;
     logic [5:0]  rs1;
     logic [5:0]  rs2;
     logic [5:0]  rs3;
-    logic [31:0] imm; // imm:32, {fm:4,pred:4,succ:4}
+    logic [31:0] imm; // imm:32, {fm:4,pred:4,succ:4}, shamt:6, {uimm:5,csr:12}
     logic        rl;
     logic        aq;
     logic [2:0]  rm;
-    logic [5:0]  shamt;
-    logic [11:0] csr;
   } decoded_instr_t;
 
 endpackage
