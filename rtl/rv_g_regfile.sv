@@ -57,8 +57,8 @@ module rv_g_regfile #(
     // COMPUTE RS READYs
     assign rs1_ready = lock[rs1_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs1_addr_i)) : '1;
     assign rs2_ready = lock[rs2_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs2_addr_i)) : '1;
-    assign rs3_ready =
-      rs3_addr_i[5] ? (lock[rs3_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs3_addr_i)) : '1) : '1;
+    assign rs3_ready = rs3_addr_i[5] ?
+        (lock[rs3_addr_i] ? ((wr_en_i == '1) && (wr_addr_i == rs3_addr_i)) : '1) : '1;
     // COMPUTE RS DATAs
     assign rs1_data_o = lock[rs1_addr_i] ? wr_data_i : (rs1_addr_i[5] ? f_rs[0] : x_rs[0]);
     assign rs2_data_o = lock[rs2_addr_i] ? wr_data_i : (rs2_addr_i[5] ? f_rs[1] : x_rs[1]);
