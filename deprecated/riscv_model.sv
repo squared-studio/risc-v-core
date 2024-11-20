@@ -1,4 +1,8 @@
-// ### Authors : Foez Ahmed (foez.official@gmail.com), Md. Mohiuddin Reyad (mreyad30207@gmail.com)
+// Authors : Foez Ahmed (foez.official@gmail.com), Md. Mohiuddin Reyad (mreyad30207@gmail.com)
+// This file is part of squared-studio:risc-v-core
+// Copyright (c) 2024 squared-studio
+// Licensed under the MIT License
+// See LICENSE file in the project root for full license information
 
 // SUPPORTED INSTRUCTION SET
 // RV32I            RV32M            RV32Zifencei     RV32Zicsr
